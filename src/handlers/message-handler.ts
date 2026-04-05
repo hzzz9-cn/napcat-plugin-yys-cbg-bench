@@ -12,6 +12,7 @@
 
 import type { NapCatPluginContext, OB11Message, OB11PostSendMsg } from '../napcat-shim';
 import { pluginState } from '../core/state';
+import { extractFirstCbgUrl } from '../services/cbg-link-service';
 
 // ==================== CD 冷却管理 ====================
 
@@ -196,64 +197,75 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
 
         pluginState.ctx.logger.debug(`收到消息: ${rawMessage} | 类型: ${messageType}`);
 
-        // 群消息：检查该群是否启用
-        if (messageType === 'group' && groupId) {
-            if (!pluginState.isGroupEnabled(String(groupId))) return;
-        }
-
-        // 检查命令前缀
-        const prefix = pluginState.config.commandPrefix || '#cmd';
-        if (!rawMessage.startsWith(prefix)) return;
-
-        // 解析命令参数
-        const args = rawMessage.slice(prefix.length).trim().split(/\s+/);
-        const subCommand = args[0]?.toLowerCase() || '';
-
-        // TODO: 在这里实现你的命令处理逻辑
-        switch (subCommand) {
-            case 'help': {
-                const helpText = [
-                    `[= 插件帮助 =]`,
-                    `${prefix} help - 显示帮助信息`,
-                    `${prefix} ping - 测试连通性`,
-                    `${prefix} status - 查看运行状态`,
-                ].join('\n');
-                await sendReply(ctx, event, helpText);
-                break;
+        const link = pluginState.config.autoParseLinks ? extractFirstCbgUrl(rawMessage) : null;
+        if (!link) {
+            // 群消息：检查该群是否启用
+            if (messageType === 'group' && groupId) {
+                if (!pluginState.isGroupEnabled(String(groupId))) return;
             }
 
-            case 'ping': {
-                // 群消息检查 CD
-                if (messageType === 'group' && groupId) {
-                    const remaining = getCooldownRemaining(groupId, 'ping');
-                    if (remaining > 0) {
-                        await sendReply(ctx, event, `请等待 ${remaining} 秒后再试`);
-                        return;
-                    }
+            // 检查命令前缀
+            const prefix = pluginState.config.commandPrefix || '#cmd';
+            if (!rawMessage.startsWith(prefix)) return;
+
+            // 解析命令参数
+            const args = rawMessage.slice(prefix.length).trim().split(/\s+/);
+            const subCommand = args[0]?.toLowerCase() || '';
+
+            // TODO: 在这里实现你的命令处理逻辑
+            switch (subCommand) {
+                case 'help': {
+                    const helpText = [
+                        `[= 插件帮助 =]`,
+                        `${prefix} help - 显示帮助信息`,
+                        `${prefix} ping - 测试连通性`,
+                        `${prefix} status - 查看运行状态`,
+                    ].join('\n');
+                    await sendReply(ctx, event, helpText);
+                    break;
                 }
 
-                await sendReply(ctx, event, 'pong!');
-                if (messageType === 'group' && groupId) setCooldown(groupId, 'ping');
-                pluginState.incrementProcessed();
-                break;
-            }
+                case 'ping': {
+                    // 群消息检查 CD
+                    if (messageType === 'group' && groupId) {
+                        const remaining = getCooldownRemaining(groupId, 'ping');
+                        if (remaining > 0) {
+                            await sendReply(ctx, event, `请等待 ${remaining} 秒后再试`);
+                            return;
+                        }
+                    }
 
-            case 'status': {
-                const statusText = [
-                    `[= 插件状态 =]`,
-                    `运行时长: ${pluginState.getUptimeFormatted()}`,
-                    `今日处理: ${pluginState.stats.todayProcessed}`,
-                    `总计处理: ${pluginState.stats.processed}`,
-                ].join('\n');
-                await sendReply(ctx, event, statusText);
-                break;
-            }
+                    await sendReply(ctx, event, 'pong!');
+                    if (messageType === 'group' && groupId) setCooldown(groupId, 'ping');
+                    pluginState.incrementProcessed();
+                    break;
+                }
 
-            default: {
-                // TODO: 在这里处理你的主要命令逻辑
-                break;
+                case 'status': {
+                    const statusText = [
+                        `[= 插件状态 =]`,
+                        `运行时长: ${pluginState.getUptimeFormatted()}`,
+                        `今日处理: ${pluginState.stats.todayProcessed}`,
+                        `总计处理: ${pluginState.stats.processed}`,
+                    ].join('\n');
+                    await sendReply(ctx, event, statusText);
+                    break;
+                }
+
+                default: {
+                    // TODO: 在这里处理你的主要命令逻辑
+                    break;
+                }
             }
+            return;
         }
+
+        if (messageType === 'group' && groupId && !pluginState.isGroupEnabled(String(groupId))) {
+            return;
+        }
+
+        // TODO: 在这里处理你的主要链接分析逻辑
+        pluginState.ctx.logger.debug(`检测到藏宝阁链接: ${link} | 来源: ${messageType}`);
     } catch (error) {
         pluginState.logger.error('处理消息时出错:', error);
     }
