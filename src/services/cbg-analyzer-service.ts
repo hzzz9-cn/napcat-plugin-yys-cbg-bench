@@ -1,6 +1,27 @@
 import type { BenchPosterViewModel } from '../types'
 
+function resolveReportId(sourceUrl: string): string {
+    const extractTail = (value: string): string | null => {
+        const parts = value.split('/').filter(Boolean)
+        return parts.length > 0 ? parts[parts.length - 1] : null
+    }
+
+    if (sourceUrl) {
+        try {
+            const parsed = new URL(sourceUrl)
+            const candidate = extractTail(parsed.pathname)
+            if (candidate) return candidate
+        } catch {
+            const candidate = extractTail(sourceUrl)
+            if (candidate) return candidate
+        }
+    }
+
+    return `r-${Date.now()}`
+}
+
 export function analyzeCbgDetail(data: any, sourceUrl: string): BenchPosterViewModel {
+    const hasEquip = Boolean(data?.equip)
     const equip = data?.equip ?? {}
     const detail = equip.detail ?? {}
     const heroes = equip.heroes ?? {}
@@ -10,8 +31,23 @@ export function analyzeCbgDetail(data: any, sourceUrl: string): BenchPosterViewM
     const crit = yuhun.crit ?? {}
     const inventory = yuhun.inventory ?? {}
 
+    const warnings: string[] = []
+    if (!hasEquip) warnings.push('缺少账号信息')
+
+    const ensureKeyField = (value: unknown, label: string) => {
+        if (value == null || value === '') {
+            warnings.push(`缺少${label}`)
+        }
+    }
+
+    ensureKeyField(equip.area_name, '大区信息')
+    ensureKeyField(equip.server_name, '服务器信息')
+    ensureKeyField(equip.equip_name, '账号名')
+    ensureKeyField(equip.price, '价格')
+
     const priceRaw = equip.price ?? ''
-    const priceText = priceRaw ? `¥${priceRaw}` : '¥0'
+    const hasPrice = priceRaw !== ''
+    const priceText = hasPrice ? `¥${priceRaw}` : '¥0'
 
     const resources: Array<{ label: string; value: string }> = []
     if (detail.power != null) {
@@ -40,7 +76,7 @@ export function analyzeCbgDetail(data: any, sourceUrl: string): BenchPosterViewM
     const suitJudgements: string[] = speed.suit ? [`速度套装: ${speed.suit}`] : []
 
     return {
-        reportId: 'pending',
+        reportId: resolveReportId(sourceUrl),
         sourceUrl,
         generatedAt: new Date().toISOString(),
         hero: {
@@ -56,7 +92,11 @@ export function analyzeCbgDetail(data: any, sourceUrl: string): BenchPosterViewM
         collection: {
             missingSp: 0,
             missingSsr: 0,
-            linkageSummary: Array.isArray(heroes.collections) ? heroes.collections.map((item: any) => String(item)) : [],
+            linkageSummary: Array.isArray(heroes.collections)
+                ? heroes.collections.filter(
+                      (item: unknown): item is string => typeof item === 'string' && item.trim().length > 0
+                  )
+                : [],
             skinSummary: [
                 ...(skins.sp != null ? [`SP皮肤 ${skins.sp}`] : []),
                 ...(skins.ssr != null ? [`SSR皮肤 ${skins.ssr}`] : []),
@@ -69,6 +109,6 @@ export function analyzeCbgDetail(data: any, sourceUrl: string): BenchPosterViewM
             inventorySummary,
             suitJudgements,
         },
-        warnings: [],
+        warnings,
     }
 }
