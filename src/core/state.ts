@@ -165,6 +165,7 @@ class PluginState {
             this.logger.debug(`(｡-ω-) 清理定时器: ${jobId}`);
         }
         this.timers.clear();
+        this.saveConfig();
         this.reportStorage = null;
         this.reportOrchestrator = null;
         this.reports = [];
@@ -174,7 +175,6 @@ class PluginState {
             todayProcessed: 0,
             lastUpdateDay: new Date().toDateString(),
         };
-        this.saveConfig();
         this._ctx = null;
     }
 
