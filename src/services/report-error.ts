@@ -1,14 +1,11 @@
-export interface ReportError {
+export class ReportError extends Error {
     code: string
     publicMessage: string
-}
 
-export function createReportError(code: string, publicMessage: string): ReportError {
-    return { code, publicMessage }
-}
-
-export function isReportError(error: unknown): error is ReportError {
-    if (!error || typeof error !== 'object') return false
-    const record = error as Record<string, unknown>
-    return typeof record.code === 'string' && typeof record.publicMessage === 'string'
+    constructor(code: string, publicMessage: string) {
+        super(publicMessage)
+        this.code = code
+        this.publicMessage = publicMessage
+        Object.setPrototypeOf(this, new.target.prototype)
+    }
 }

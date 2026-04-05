@@ -15,7 +15,7 @@ describe('cbg-fetch-service', () => {
         })
         const service = createCbgFetchService({ fetchImpl, timeoutMs: 500 })
 
-        await expect(service.fetchDetail(validUrl)).rejects.toEqual(safeError)
+        await expect(service.fetchDetail(validUrl)).rejects.toMatchObject(safeError)
     })
 
     it('maps timeout to safe report error', async () => {
@@ -41,7 +41,7 @@ describe('cbg-fetch-service', () => {
             const service = createCbgFetchService({ fetchImpl, timeoutMs: 10 })
 
             const promise = service.fetchDetail(validUrl)
-            const expectation = expect(promise).rejects.toEqual(safeError)
+            const expectation = expect(promise).rejects.toMatchObject(safeError)
 
             await vi.advanceTimersByTimeAsync(20)
 

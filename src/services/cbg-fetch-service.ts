@@ -1,5 +1,5 @@
 import { isValidCbgUrl, normalizeCbgUrl } from './cbg-link-service'
-import { createReportError, isReportError } from './report-error'
+import { ReportError } from './report-error'
 
 const CBG_DETAIL_ENDPOINT = 'https://yys.cbg.163.com/cgi/api/get_equip_detail'
 const REQUEST_FAILED_MESSAGE = '藏宝阁请求失败，请稍后再试'
@@ -18,7 +18,7 @@ export interface CbgFetchServiceOptions {
 function parseDetailParams(rawUrl: string): { serverid: string; ordersn: string } {
     const normalized = normalizeCbgUrl(rawUrl)
     if (!isValidCbgUrl(normalized)) {
-        throw createReportError('CBG_INVALID_URL', '藏宝阁链接无效')
+        throw new ReportError('CBG_INVALID_URL', '藏宝阁链接无效')
     }
 
     const parsed = new URL(normalized)
@@ -49,17 +49,17 @@ export function createCbgFetchService({ fetchImpl = fetch, timeoutMs }: CbgFetch
                 })
 
                 if (!response.ok) {
-                    throw createReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
+                    throw new ReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
                 }
 
                 try {
                     return await response.json()
                 } catch {
-                    throw createReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
+                    throw new ReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
                 }
             } catch (error) {
-                if (isReportError(error)) throw error
-                throw createReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
+                if (error instanceof ReportError) throw error
+                throw new ReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
             } finally {
                 clearTimeout(timeoutId)
             }
