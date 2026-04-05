@@ -165,6 +165,15 @@ class PluginState {
             this.logger.debug(`(｡-ω-) 清理定时器: ${jobId}`);
         }
         this.timers.clear();
+        this.reportStorage = null;
+        this.reportOrchestrator = null;
+        this.reports = [];
+        this.recentErrors = [];
+        this.stats = {
+            processed: 0,
+            todayProcessed: 0,
+            lastUpdateDay: new Date().toDateString(),
+        };
         this.saveConfig();
         this._ctx = null;
     }
@@ -338,7 +347,7 @@ class PluginState {
      * 合并更新配置
      */
     updateConfig(partial: Partial<PluginConfig>): void {
-        this.config = { ...this.config, ...partial };
+        this.config = sanitizeConfig({ ...this.config, ...partial });
         this.saveConfig();
     }
 

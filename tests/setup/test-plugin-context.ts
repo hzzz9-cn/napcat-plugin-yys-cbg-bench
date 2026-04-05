@@ -1,3 +1,4 @@
+import os from 'os'
 import path from 'path'
 import { vi } from 'vitest'
 import type { NapCatConfigBuilder, NapCatPluginContext, PluginLogger, PluginRouter } from '../../src/napcat-shim'
@@ -118,11 +119,17 @@ const createNapCatConfig = (): NapCatConfigBuilder => ({
     }),
 })
 
-export function createTestPluginContext(overrides: Record<string, unknown> = {}): NapCatPluginContext {
+const createTempBaseDir = (): string => {
+    const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`
+    return path.join(os.tmpdir(), 'napcat-plugin-yys-cbg-bench', `test-${suffix}`)
+}
+
+export function createTestPluginContext(overrides: Partial<NapCatPluginContext> = {}): NapCatPluginContext {
+    const baseDir = createTempBaseDir()
     const base: NapCatPluginContext = {
         pluginName: 'yys-cbg-bench',
-        dataPath: path.join(process.cwd(), '.test-data'),
-        configPath: path.join(process.cwd(), '.test-config.json'),
+        dataPath: path.join(baseDir, 'data'),
+        configPath: path.join(baseDir, 'config.json'),
         adapterName: 'test-adapter',
         pluginManager: { config: {} },
         logger: createLogger(),
