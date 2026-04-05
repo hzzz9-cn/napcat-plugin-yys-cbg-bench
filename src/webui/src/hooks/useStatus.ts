@@ -8,9 +8,7 @@ export function useStatus() {
     const fetchStatus = useCallback(async () => {
         try {
             const data = await noAuthFetch<PluginStatus>('/status')
-            if (data.code === 0 && data.data) {
-                setStatus(data.data)
-            }
+            setStatus(data.code === 0 ? data.data ?? null : null)
         } catch (e) {
             console.error('Status fetch failed:', e)
         }

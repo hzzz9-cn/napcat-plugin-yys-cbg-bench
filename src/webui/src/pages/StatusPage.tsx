@@ -53,7 +53,7 @@ export default function StatusPage({ status, onRefresh }: StatusPageProps) {
         )
     }
 
-    const { config, stats } = status
+    const { config, stats, reports, recentErrors } = status
 
     const statCards = [
         {
@@ -117,8 +117,58 @@ export default function StatusPage({ status, onRefresh }: StatusPageProps) {
                 </div>
                 <div className="space-y-3">
                     <InfoRow label="命令前缀" value={config.commandPrefix} />
+                    <InfoRow label="自动解析" value={config.autoParseLinks ? '开启' : '关闭'} />
                     <InfoRow label="冷却时间" value={`${config.cooldownSeconds} 秒`} />
+                    <InfoRow label="请求超时" value={`${config.requestTimeoutMs} ms`} />
+                    <InfoRow label="渲染超时" value={`${config.maxRenderMs} ms`} />
+                    <InfoRow label="报告保留" value={`${config.reportRetentionHours} 小时`} />
                     <InfoRow label="调试模式" value={config.debug ? '开启' : '关闭'} />
+                </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <div className="card p-5 hover-lift animate-fade-in-up">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">最近报告</h3>
+                    <div className="space-y-3">
+                        {reports.length > 0 ? (
+                            reports.map((report) => (
+                                <a
+                                    key={report.reportId}
+                                    href={report.imageUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block rounded-xl border border-white/10 p-3 bg-white/40 dark:bg-white/5"
+                                >
+                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {report.summary}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {report.generatedAt}
+                                    </div>
+                                </a>
+                            ))
+                        ) : (
+                            <div className="text-sm text-gray-400">暂无最近报告</div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="card p-5 hover-lift animate-fade-in-up">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">最近错误</h3>
+                    <div className="space-y-3">
+                        {recentErrors.length > 0 ? (
+                            recentErrors.map((message, index) => (
+                                <div
+                                    key={`${message}-${index}`}
+                                    className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-500 dark:text-red-300"
+                                >
+                                    {message}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-sm text-gray-400">暂无错误记录</div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

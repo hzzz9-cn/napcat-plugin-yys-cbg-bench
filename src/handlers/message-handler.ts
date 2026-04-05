@@ -13,6 +13,7 @@
 import type { NapCatPluginContext, OB11Message, OB11PostSendMsg } from '../napcat-shim';
 import { pluginState } from '../core/state';
 import { extractFirstCbgUrl } from '../services/cbg-link-service';
+import { ReportError } from '../services/report-error';
 
 // ==================== CD 冷却管理 ====================
 
@@ -193,7 +194,6 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
         const rawMessage = event.raw_message || '';
         const messageType = event.message_type;
         const groupId = event.group_id;
-        const userId = event.user_id;
 
         pluginState.ctx.logger.debug(`收到消息: ${rawMessage} | 类型: ${messageType}`);
 
@@ -204,8 +204,42 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
             return;
         }
 
-        // TODO: 在这里处理你的主要链接分析逻辑
-        pluginState.ctx.logger.debug(`检测到藏宝阁链接: ${link} | 来源: ${messageType}`);
+        await sendReply(ctx, event, '正在分析这条藏宝阁链接，请稍等');
+
+        if (!pluginState.reportOrchestrator) {
+            const message = '插件尚未完成初始化';
+            pluginState.appendRecentError(message);
+            await sendReply(ctx, event, `分析失败：${message}`);
+            return;
+        }
+
+        try {
+            const report = await pluginState.reportOrchestrator.generateReport(link, String(groupId ?? 'private'));
+
+            pluginState.setReports([
+                {
+                    reportId: report.reportId,
+                    sourceUrl: link,
+                    groupId: String(groupId ?? 'private'),
+                    imageUrl: report.imageUrl,
+                    generatedAt: report.generatedAt,
+                    status: 'success',
+                    summary: report.summary,
+                },
+                ...pluginState.reports,
+            ]);
+            pluginState.incrementProcessed();
+
+            await sendReply(ctx, event, [
+                { type: 'text', data: { text: report.summary } },
+                { type: 'image', data: { file: report.imageUrl } },
+            ]);
+        } catch (error) {
+            const publicMessage = error instanceof ReportError ? error.publicMessage : '分析失败，请稍后再试';
+            pluginState.appendRecentError(publicMessage);
+            pluginState.logger.error('藏宝阁分析失败:', error);
+            await sendReply(ctx, event, `分析失败：${publicMessage}`);
+        }
     } catch (error) {
         pluginState.logger.error('处理消息时出错:', error);
     }

@@ -74,6 +74,12 @@ export default function ConfigPage() {
                         checked={config.debug}
                         onChange={(v) => updateField('debug', v)}
                     />
+                    <ToggleRow
+                        label="自动解析藏宝阁链接"
+                        desc="群聊中出现合法藏宝阁链接时自动触发分析并回图"
+                        checked={config.autoParseLinks}
+                        onChange={(v) => updateField('autoParseLinks', v)}
+                    />
                     <InputRow
                         label="命令前缀"
                         desc="触发命令的前缀"
@@ -87,7 +93,34 @@ export default function ConfigPage() {
                         type="number"
                         onChange={(v) => updateField('cooldownSeconds', Number(v) || 0)}
                     />
-                    {/* TODO: 在这里添加你的配置项 */}
+                    <InputRow
+                        label="请求超时 (ms)"
+                        desc="藏宝阁详情接口请求超时时间"
+                        value={String(config.requestTimeoutMs)}
+                        type="number"
+                        onChange={(v) => updateField('requestTimeoutMs', Number(v) || 0)}
+                    />
+                    <InputRow
+                        label="渲染超时 (ms)"
+                        desc="HTML 海报渲染和截图的最长等待时间"
+                        value={String(config.maxRenderMs)}
+                        type="number"
+                        onChange={(v) => updateField('maxRenderMs', Number(v) || 0)}
+                    />
+                    <InputRow
+                        label="报告保留 (小时)"
+                        desc="超过该时长的报告会在后台自动清理"
+                        value={String(config.reportRetentionHours)}
+                        type="number"
+                        onChange={(v) => updateField('reportRetentionHours', Number(v) || 0)}
+                    />
+                    <InputRow
+                        label="最近报告上限"
+                        desc="WebUI 中保留的最近报告条数"
+                        value={String(config.maxRecentReports)}
+                        type="number"
+                        onChange={(v) => updateField('maxRecentReports', Number(v) || 0)}
+                    />
                 </div>
             </div>
 

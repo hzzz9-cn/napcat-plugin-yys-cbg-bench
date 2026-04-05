@@ -295,6 +295,21 @@ class PluginState {
         this.setReports(filtered);
     }
 
+    startCleanupTimer(task: () => Promise<void> | void): void {
+        const existing = this.timers.get('report-cleanup');
+        if (existing) {
+            clearInterval(existing);
+        }
+
+        const timer = setInterval(() => {
+            void Promise.resolve(task()).catch((error) => {
+                this.logger.error('报告清理任务执行失败:', error);
+            });
+        }, 60 * 60 * 1000);
+
+        this.timers.set('report-cleanup', timer);
+    }
+
     // ==================== 配置管理 ====================
 
     /**

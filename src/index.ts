@@ -19,6 +19,9 @@
  * @license MIT
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import type {
     PluginModule,
     PluginConfigSchema,
@@ -29,12 +32,38 @@ import { buildConfigSchema } from './config';
 import { pluginState } from './core/state';
 import { handleMessage } from './handlers/message-handler';
 import { registerApiRoutes } from './services/api-service';
+import { analyzeCbgDetail } from './services/cbg-analyzer-service';
+import { createCbgFetchService } from './services/cbg-fetch-service';
+import { createReportOrchestratorService } from './services/report-orchestrator-service';
+import { createReportRenderService } from './services/report-render-service';
+import { createReportStorageService } from './services/report-storage-service';
 import type { PluginConfig } from './types';
 
 // ==================== 配置 UI Schema ====================
 
 /** NapCat WebUI 读取此导出来展示配置面板 */
 export let plugin_config_ui: PluginConfigSchema = [];
+
+function loadReportTemplateHtml(): string {
+    const currentFile = fileURLToPath(import.meta.url);
+    const currentDir = path.dirname(currentFile);
+    const candidates = [
+        path.resolve(currentDir, '../templates/report-poster.html'),
+        path.resolve(currentDir, './templates/report-poster.html'),
+    ];
+
+    for (const candidate of candidates) {
+        try {
+            if (fs.existsSync(candidate)) {
+                return fs.readFileSync(candidate, 'utf-8');
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    throw new Error('未找到报告模板 report-poster.html');
+}
 
 // ==================== 生命周期函数 ====================
 
@@ -57,6 +86,32 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
 
         // 4. 注册 API 路由
         registerApiRoutes(ctx);
+
+        const reportStorage = createReportStorageService({
+            dataPath: ctx.dataPath,
+            pluginStaticBase: `/plugin/${ctx.pluginName}/files/static/reports`,
+            retentionHours: pluginState.config.reportRetentionHours,
+            maxRecentReports: pluginState.config.maxRecentReports,
+        });
+        const reportRenderer = createReportRenderService({
+            templateHtml: loadReportTemplateHtml(),
+        });
+        const reportOrchestrator = createReportOrchestratorService({
+            fetchService: createCbgFetchService({
+                timeoutMs: pluginState.config.requestTimeoutMs,
+            }),
+            analyzer: analyzeCbgDetail,
+            storage: reportStorage,
+            renderer: reportRenderer,
+        });
+
+        pluginState.setRuntimeServices({
+            reportStorage,
+            reportOrchestrator,
+        });
+        pluginState.startCleanupTimer(() => {
+            pluginState.cleanupExpiredReports();
+        });
 
         ctx.logger.info('插件初始化完成');
     } catch (error) {
@@ -141,6 +196,7 @@ function registerWebUI(ctx: NapCatPluginContext): void {
     // 托管前端静态资源（构建产物在 webui/ 目录下）
     // 访问路径: /plugin/<plugin-id>/files/static/
     router.static('/static', 'webui');
+    router.static('/static/reports', `${ctx.dataPath}/reports`);
 
     // 注册仪表盘页面（显示在 NapCat WebUI 侧边栏）
     // 访问路径: /plugin/<plugin-id>/page/dashboard
