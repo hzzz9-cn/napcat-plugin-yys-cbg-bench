@@ -12,9 +12,9 @@ export const DEFAULT_CONFIG: PluginConfig = {
     debug: false,
     autoParseLinks: true,
     commandPrefix: '#cbg',
-    cooldownSeconds: 60,
-    requestTimeoutMs: 15000,
-    maxRenderMs: 30000,
+    cooldownSeconds: 30,
+    requestTimeoutMs: 10000,
+    maxRenderMs: 15000,
     reportRetentionHours: 24,
     maxRecentReports: 20,
     groupConfigs: {},
@@ -51,11 +51,11 @@ export function buildConfigSchema(ctx: NapCatPluginContext): PluginConfigSchema 
         // 命令前缀
         ctx.NapCatConfig.text('commandPrefix', '命令前缀', '#cbg', '手动指令前缀（预留）'),
         // 冷却时间
-        ctx.NapCatConfig.number('cooldownSeconds', '冷却时间（秒）', 60, '同一群触发分析的冷却时间，0 表示不限制'),
+        ctx.NapCatConfig.number('cooldownSeconds', '冷却时间（秒）', 30, '同一群触发分析的冷却时间，0 表示不限制'),
         // 请求超时
-        ctx.NapCatConfig.number('requestTimeoutMs', '请求超时（毫秒）', 15000, '藏宝阁请求的超时时间'),
+        ctx.NapCatConfig.number('requestTimeoutMs', '请求超时（毫秒）', 10000, '藏宝阁请求的超时时间'),
         // 渲染超时
-        ctx.NapCatConfig.number('maxRenderMs', '渲染超时（毫秒）', 30000, '海报渲染与截图超时'),
+        ctx.NapCatConfig.number('maxRenderMs', '渲染超时（毫秒）', 15000, '海报渲染与截图超时'),
         // 报告保留时间
         ctx.NapCatConfig.number('reportRetentionHours', '报告保留时间（小时）', 24, '超过该时间的报告会被清理'),
         // 最近报告上限

@@ -101,10 +101,17 @@ class PluginState {
     recentErrors: string[] = [];
 
     /** 报告存储服务（运行时注入） */
-    reportStorage: unknown = null;
+    reportStorage: {
+        filterExpiredReports: (reports: ReportListItem[]) => ReportListItem[];
+    } | null = null;
 
     /** 报告编排服务（运行时注入） */
-    reportOrchestrator: unknown = null;
+    reportOrchestrator: {
+        generateReport: (
+            sourceUrl: string,
+            groupId: string
+        ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+    } | null = null;
 
     /** 获取上下文（确保已初始化） */
     get ctx(): NapCatPluginContext {
@@ -254,13 +261,20 @@ class PluginState {
         const text = message.trim();
         if (!text) return;
         this.recentErrors.unshift(text);
-        const limit = this.config.maxRecentReports;
-        if (isFiniteNumber(limit) && limit > 0) {
-            this.recentErrors = this.recentErrors.slice(0, limit);
-        }
+        this.recentErrors = this.recentErrors.slice(0, 10);
     }
 
-    setRuntimeServices(input: { reportStorage?: unknown; reportOrchestrator?: unknown }): void {
+    setRuntimeServices(input: {
+        reportStorage?: {
+            filterExpiredReports: (reports: ReportListItem[]) => ReportListItem[];
+        } | null;
+        reportOrchestrator?: {
+            generateReport: (
+                sourceUrl: string,
+                groupId: string
+            ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+        } | null;
+    }): void {
         if (typeof input.reportStorage !== 'undefined') {
             this.reportStorage = input.reportStorage;
         }
@@ -270,16 +284,9 @@ class PluginState {
     }
 
     cleanupExpiredReports(): void {
-        const retentionHours = this.config.reportRetentionHours;
-        if (!isFiniteNumber(retentionHours) || retentionHours <= 0) return;
-        const cutoff = Date.now() - retentionHours * 60 * 60 * 1000;
-        const nextReports = this.reports.filter((report) => {
-            const timestamp = Date.parse(report.generatedAt);
-            return Number.isFinite(timestamp) && timestamp >= cutoff;
-        });
-        if (nextReports.length !== this.reports.length) {
-            this.setReports(nextReports);
-        }
+        if (!this.reportStorage) return;
+        const filtered = this.reportStorage.filterExpiredReports(this.reports);
+        this.setReports(filtered);
     }
 
     // ==================== 配置管理 ====================
