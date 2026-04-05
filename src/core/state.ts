@@ -15,6 +15,7 @@ import path from 'path';
 import type { NapCatPluginContext, PluginLogger } from '../napcat-shim';
 import { DEFAULT_CONFIG } from '../config';
 import type { PluginConfig, GroupConfig, ReportListItem } from '../types';
+import type { ReportStorageService } from '../services/report-storage-service';
 
 // ==================== 配置清洗工具 ====================
 
@@ -101,9 +102,7 @@ class PluginState {
     recentErrors: string[] = [];
 
     /** 报告存储服务（运行时注入） */
-    reportStorage: {
-        filterExpiredReports: (reports: ReportListItem[]) => ReportListItem[];
-    } | null = null;
+    reportStorage: ReportStorageService | null = null;
 
     /** 报告编排服务（运行时注入） */
     reportOrchestrator: {
@@ -274,9 +273,7 @@ class PluginState {
     }
 
     setRuntimeServices(input: {
-        reportStorage?: {
-            filterExpiredReports: (reports: ReportListItem[]) => ReportListItem[];
-        } | null;
+        reportStorage?: ReportStorageService | null;
         reportOrchestrator?: {
             generateReport: (
                 sourceUrl: string,
