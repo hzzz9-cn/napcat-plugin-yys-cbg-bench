@@ -109,7 +109,7 @@ function copyAssetsPlugin() {
                     console.log('[copy-assets] (o\'v\'o) 已生成精简 package.json');
                 }
 
-                // 4. 复制 templates 目录（如果存在）
+                // 4. 复制包含报告 HTML 模板和字体 CSS 的 templates 目录（如果存在）
                 const templatesSrc = resolve(__dirname, 'templates');
                 if (fs.existsSync(templatesSrc)) {
                     copyDirRecursive(templatesSrc, resolve(distDir, 'templates'));

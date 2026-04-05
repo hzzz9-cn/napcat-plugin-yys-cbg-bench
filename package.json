@@ -1,11 +1,11 @@
 {
-  "name": "napcat-plugin-template",
-  "plugin": "插件模板",
+  "name": "napcat-plugin-yys-cbg-bench",
+  "plugin": "阴阳师藏宝阁分析",
   "version": "1.0.0",
   "type": "module",
   "main": "index.mjs",
-  "description": "NapCat 插件开发模板 - 快速开始你的插件开发",
-  "author": "Your Name",
+  "description": "NapCat 插件：自动识别藏宝阁链接并生成账号分析海报",
+  "author": "chining",
   "license": "MIT",
   "keywords": [
     "napcat",
@@ -21,7 +21,8 @@
     "homepage": ""
   },
   "dependencies": {
-    "napcat-types": "0.0.16"
+    "napcat-types": "0.0.16",
+    "playwright": "^1.54.2"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.3.1",
@@ -30,7 +31,8 @@
     "napcat-plugin-debug-cli": "^1.2.8",
     "typescript": "^5.9.3",
     "vite": "^6.4.1",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "build": "vite build",
@@ -40,6 +42,8 @@
     "dev": "vite build --watch",
     "push": "vite build",
     "deploy": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }
