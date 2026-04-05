@@ -19,7 +19,7 @@ describe('report-storage-service', () => {
         const dataPath = path.join(os.tmpdir(), 'napcat-report-tests', 'data')
         const service = createReportStorageService({
             dataPath,
-            pluginStaticBase: '/plugin/test/files/reports',
+            pluginStaticBase: '/plugin/test/files/static/reports',
             retentionHours: 24,
             maxRecentReports: 20,
             now: () => 1712400000000,
@@ -27,7 +27,8 @@ describe('report-storage-service', () => {
 
         const paths = service.createReportPaths('123')
 
-        expect(paths.imageUrl).toBe('/plugin/test/files/reports/123/r-1712400000000.png')
+        expect(paths.imageUrl).toBe('/plugin/test/files/static/reports/images/123-1712400000000.png')
+        expect(paths.imageUrl).toContain('/files/static/reports/images/')
         expect(paths.imageUrl).not.toContain(dataPath)
         expect(paths.imageUrl).not.toMatch(/[A-Za-z]:\\/)
     })

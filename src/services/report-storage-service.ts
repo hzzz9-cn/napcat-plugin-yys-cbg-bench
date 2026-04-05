@@ -4,9 +4,8 @@ import type { ReportListItem } from '../types'
 
 export interface ReportPaths {
     reportId: string
-    groupId: string
-    reportDir: string
     imagePath: string
+    htmlPath: string
     imageUrl: string
 }
 
@@ -44,29 +43,30 @@ export function createReportStorageService({
     now = () => Date.now(),
 }: ReportStorageServiceOptions): ReportStorageService {
     const baseDir = path.join(dataPath, 'reports')
+    const imagesDir = path.join(baseDir, 'images')
+    const htmlDir = path.join(baseDir, 'html')
     const staticBase = normalizeStaticBase(pluginStaticBase)
 
     const ensureDirs = (): void => {
-        fs.mkdirSync(baseDir, { recursive: true })
+        fs.mkdirSync(imagesDir, { recursive: true })
+        fs.mkdirSync(htmlDir, { recursive: true })
     }
 
     const createReportPaths = (groupId: string): ReportPaths => {
         const safeGroupId = sanitizeSegment(groupId)
-        const reportId = `r-${now()}`
-        const groupDir = path.join(baseDir, safeGroupId)
-        fs.mkdirSync(groupDir, { recursive: true })
+        const reportId = `${safeGroupId}-${now()}`
+        ensureDirs()
 
         const imageFile = `${reportId}.png`
-        const imagePath = path.join(groupDir, imageFile)
-        const imageUrl = [staticBase, encodeURIComponent(safeGroupId), encodeURIComponent(imageFile)]
-            .filter(Boolean)
-            .join('/')
+        const htmlFile = `${reportId}.html`
+        const imagePath = path.join(imagesDir, imageFile)
+        const htmlPath = path.join(htmlDir, htmlFile)
+        const imageUrl = `${staticBase}/images/${encodeURIComponent(imageFile)}`
 
         return {
             reportId,
-            groupId: safeGroupId,
-            reportDir: groupDir,
             imagePath,
+            htmlPath,
             imageUrl,
         }
     }
