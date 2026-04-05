@@ -1,0 +1,47 @@
+{
+    "status": 1,
+    "msg": "ok",
+    "equip": {
+        "ordersn": "202603281001616-9-VLP4WCHMFPJMEV",
+        "serverid": "9",
+        "area_name": "测试大区",
+        "server_name": "测试服务器",
+        "equip_name": "脱敏账号",
+        "price": "64800",
+        "status": "public",
+        "seller_name": "已脱敏",
+        "sell_time": 1711700000,
+        "create_time": 1711600000,
+        "detail": {
+            "level": 60,
+            "role_name": "脱敏阴阳师",
+            "power": 123456
+        },
+        "heroes": {
+            "sp": 12,
+            "ssr": 28,
+            "sr": 111,
+            "collections": [
+                "sp_1",
+                "ssr_1"
+            ]
+        },
+        "skins": {
+            "sp": 12,
+            "ssr": 28,
+            "sr": 111
+        },
+        "yuhun": {
+            "speed": {
+                "best": 158,
+                "suit": "招财猫"
+            },
+            "crit": {
+                "best": 100
+            },
+            "inventory": {
+                "total": 1234
+            }
+        }
+    }
+}
