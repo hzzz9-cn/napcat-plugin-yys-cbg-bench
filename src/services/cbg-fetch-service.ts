@@ -37,6 +37,12 @@ export function createCbgFetchService({ fetchImpl = fetch, timeoutMs }: CbgFetch
             const body = new URLSearchParams({ serverid, ordersn }).toString()
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+            let timeoutCleared = false
+            const clearTimeoutSafe = () => {
+                if (timeoutCleared) return
+                clearTimeout(timeoutId)
+                timeoutCleared = true
+            }
 
             try {
                 const response = await fetchImpl(CBG_DETAIL_ENDPOINT, {
@@ -47,6 +53,7 @@ export function createCbgFetchService({ fetchImpl = fetch, timeoutMs }: CbgFetch
                     body,
                     signal: controller.signal,
                 })
+                clearTimeoutSafe()
 
                 if (!response.ok) {
                     throw new ReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
@@ -61,7 +68,7 @@ export function createCbgFetchService({ fetchImpl = fetch, timeoutMs }: CbgFetch
                 if (error instanceof ReportError) throw error
                 throw new ReportError('CBG_REQUEST_FAILED', REQUEST_FAILED_MESSAGE)
             } finally {
-                clearTimeout(timeoutId)
+                clearTimeoutSafe()
             }
         },
     }
