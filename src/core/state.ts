@@ -14,12 +14,16 @@ import fs from 'fs';
 import path from 'path';
 import type { NapCatPluginContext, PluginLogger } from '../napcat-shim';
 import { DEFAULT_CONFIG } from '../config';
-import type { PluginConfig, GroupConfig } from '../types';
+import type { PluginConfig, GroupConfig, ReportListItem } from '../types';
 
 // ==================== 配置清洗工具 ====================
 
 function isObject(v: unknown): v is Record<string, unknown> {
     return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+function isFiniteNumber(v: unknown): v is number {
+    return typeof v === 'number' && Number.isFinite(v);
 }
 
 /**
@@ -33,8 +37,23 @@ function sanitizeConfig(raw: unknown): PluginConfig {
 
     if (typeof raw.enabled === 'boolean') out.enabled = raw.enabled;
     if (typeof raw.debug === 'boolean') out.debug = raw.debug;
+    if (typeof raw.autoParseLinks === 'boolean') out.autoParseLinks = raw.autoParseLinks;
     if (typeof raw.commandPrefix === 'string') out.commandPrefix = raw.commandPrefix;
-    if (typeof raw.cooldownSeconds === 'number') out.cooldownSeconds = raw.cooldownSeconds;
+    if (isFiniteNumber(raw.cooldownSeconds) && raw.cooldownSeconds >= 0) {
+        out.cooldownSeconds = raw.cooldownSeconds;
+    }
+    if (isFiniteNumber(raw.requestTimeoutMs) && raw.requestTimeoutMs >= 0) {
+        out.requestTimeoutMs = raw.requestTimeoutMs;
+    }
+    if (isFiniteNumber(raw.maxRenderMs) && raw.maxRenderMs >= 0) {
+        out.maxRenderMs = raw.maxRenderMs;
+    }
+    if (isFiniteNumber(raw.reportRetentionHours) && raw.reportRetentionHours >= 0) {
+        out.reportRetentionHours = raw.reportRetentionHours;
+    }
+    if (isFiniteNumber(raw.maxRecentReports) && raw.maxRecentReports >= 0) {
+        out.maxRecentReports = raw.maxRecentReports;
+    }
 
     // 群配置清洗
     if (isObject(raw.groupConfigs)) {
@@ -42,13 +61,10 @@ function sanitizeConfig(raw: unknown): PluginConfig {
             if (isObject(groupConfig)) {
                 const cfg: GroupConfig = {};
                 if (typeof groupConfig.enabled === 'boolean') cfg.enabled = groupConfig.enabled;
-                // TODO: 在这里添加你的群配置项清洗
                 out.groupConfigs[groupId] = cfg;
             }
         }
     }
-
-    // TODO: 在这里添加你的配置项清洗逻辑
 
     return out;
 }
@@ -78,6 +94,18 @@ class PluginState {
         lastUpdateDay: new Date().toDateString(),
     };
 
+    /** 最近报告列表 */
+    reports: ReportListItem[] = [];
+
+    /** 最近错误摘要 */
+    recentErrors: string[] = [];
+
+    /** 报告存储服务（运行时注入） */
+    reportStorage: unknown = null;
+
+    /** 报告编排服务（运行时注入） */
+    reportOrchestrator: unknown = null;
+
     /** 获取上下文（确保已初始化） */
     get ctx(): NapCatPluginContext {
         if (!this._ctx) throw new Error('PluginState 尚未初始化，请先调用 init()');
@@ -99,6 +127,7 @@ class PluginState {
         this.startTime = Date.now();
         this.loadConfig();
         this.ensureDataDir();
+        this.loadReports();
         this.fetchSelfId();
     }
 
@@ -179,6 +208,77 @@ class PluginState {
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
         } catch (e) {
             this.logger.error("(╥﹏╥) 保存数据文件 " + filename + " 失败:", e);
+        }
+    }
+
+    // ==================== 报告索引管理 ====================
+
+    private ensureReportsDir(): void {
+        const dir = path.join(this.ctx.dataPath, 'reports');
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    }
+
+    private getReportsIndexFile(): string {
+        return path.join('reports', 'index.json');
+    }
+
+    private trimReports(reports: ReportListItem[]): ReportListItem[] {
+        const limit = this.config.maxRecentReports;
+        if (!isFiniteNumber(limit) || limit <= 0) return reports;
+        return reports.slice(0, limit);
+    }
+
+    loadReports(): void {
+        this.ensureReportsDir();
+        const raw = this.loadDataFile<unknown>(this.getReportsIndexFile(), []);
+        if (Array.isArray(raw)) {
+            this.reports = this.trimReports(raw as ReportListItem[]);
+        } else {
+            this.reports = [];
+        }
+    }
+
+    saveReports(): void {
+        this.ensureReportsDir();
+        this.saveDataFile(this.getReportsIndexFile(), this.reports);
+    }
+
+    setReports(reports: ReportListItem[]): void {
+        this.reports = this.trimReports(reports);
+        this.saveReports();
+    }
+
+    appendRecentError(message: string): void {
+        const text = message.trim();
+        if (!text) return;
+        this.recentErrors.unshift(text);
+        const limit = this.config.maxRecentReports;
+        if (isFiniteNumber(limit) && limit > 0) {
+            this.recentErrors = this.recentErrors.slice(0, limit);
+        }
+    }
+
+    setRuntimeServices(input: { reportStorage?: unknown; reportOrchestrator?: unknown }): void {
+        if (typeof input.reportStorage !== 'undefined') {
+            this.reportStorage = input.reportStorage;
+        }
+        if (typeof input.reportOrchestrator !== 'undefined') {
+            this.reportOrchestrator = input.reportOrchestrator;
+        }
+    }
+
+    cleanupExpiredReports(): void {
+        const retentionHours = this.config.reportRetentionHours;
+        if (!isFiniteNumber(retentionHours) || retentionHours <= 0) return;
+        const cutoff = Date.now() - retentionHours * 60 * 60 * 1000;
+        const nextReports = this.reports.filter((report) => {
+            const timestamp = Date.parse(report.generatedAt);
+            return Number.isFinite(timestamp) && timestamp >= cutoff;
+        });
+        if (nextReports.length !== this.reports.length) {
+            this.setReports(nextReports);
         }
     }
 
