@@ -16,11 +16,7 @@
  * 一般插件自带的 WebUI 页面使用 NoAuth 路由，因为页面本身已在 NapCat WebUI 内嵌展示。
  */
 
-import type {
-    NapCatPluginContext,
-    PluginHttpRequest,
-    PluginHttpResponse
-} from 'napcat-types/napcat-onebot/network/plugin/types';
+import type { NapCatPluginContext } from '../napcat-shim';
 import { pluginState } from '../core/state';
 
 /**

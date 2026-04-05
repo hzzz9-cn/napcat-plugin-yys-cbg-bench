@@ -12,7 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { NapCatPluginContext, PluginLogger } from 'napcat-types/napcat-onebot/network/plugin/types';
+import type { NapCatPluginContext, PluginLogger } from '../napcat-shim';
 import { DEFAULT_CONFIG } from '../config';
 import type { PluginConfig, GroupConfig } from '../types';
 

@@ -22,10 +22,8 @@
 import type {
     PluginModule,
     PluginConfigSchema,
-    PluginConfigUIController,
     NapCatPluginContext,
-} from 'napcat-types/napcat-onebot/network/plugin/types';
-import { EventType } from 'napcat-types/napcat-onebot/event/index';
+} from './napcat-shim';
 
 import { buildConfigSchema } from './config';
 import { pluginState } from './core/state';
@@ -72,7 +70,7 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
  */
 export const plugin_onmessage: PluginModule['plugin_onmessage'] = async (ctx, event) => {
     // 仅处理消息事件
-    if (event.post_type !== EventType.MESSAGE) return;
+    if (event.post_type !== 'message') return;
     // 检查插件是否启用
     if (!pluginState.config.enabled) return;
     // 委托给消息处理器

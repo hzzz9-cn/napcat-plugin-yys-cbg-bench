@@ -10,8 +10,7 @@
  * 保持每个文件职责单一。
  */
 
-import type { OB11Message, OB11PostSendMsg } from 'napcat-types/napcat-onebot';
-import type { NapCatPluginContext } from 'napcat-types/napcat-onebot/network/plugin/types';
+import type { NapCatPluginContext, OB11Message, OB11PostSendMsg } from '../napcat-shim';
 import { pluginState } from '../core/state';
 
 // ==================== CD 冷却管理 ====================
