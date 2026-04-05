@@ -45,7 +45,10 @@ function getValidatedCbgUrl(url: string): string | null {
         return null
     }
 
+    if (parsed.protocol !== 'https:') return null
     if (parsed.hostname !== CBG_HOST) return null
+    if (parsed.port) return null
+    if (parsed.username || parsed.password) return null
     if (!parsed.pathname.startsWith(CBG_PATH_PREFIX)) return null
 
     const parts = parsed.pathname.split('/').filter(Boolean)

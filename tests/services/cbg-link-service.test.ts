@@ -53,4 +53,26 @@ describe('cbg-link-service', () => {
 
         expect(isValidCbgUrl(link)).toBe(false)
     })
+
+    it('rejects non-default port', () => {
+        const link = 'https://yys.cbg.163.com:9999/cgi/mweb/equip/9/202603281001616-9-VLP4WCHMFPJMEV'
+
+        expect(isValidCbgUrl(link)).toBe(false)
+    })
+
+    it('rejects urls with credentials', () => {
+        const link = 'https://user:pass@yys.cbg.163.com/cgi/mweb/equip/9/202603281001616-9-VLP4WCHMFPJMEV'
+
+        expect(isValidCbgUrl(link)).toBe(false)
+    })
+
+    it('normalizes http urls to https', () => {
+        const httpLink = 'http://yys.cbg.163.com/cgi/mweb/equip/9/202603281001616-9-VLP4WCHMFPJMEV'
+
+        const normalized = normalizeCbgUrl(httpLink)
+
+        expect(normalized).toBe(baseLink)
+        expect(isValidCbgUrl(normalized)).toBe(true)
+        expect(extractFirstCbgUrl(`看看 ${httpLink}`)).toBe(baseLink)
+    })
 })
