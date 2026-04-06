@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { pluginState } from '../src/core/state'
 import { plugin_cleanup, plugin_init } from '../src/index'
@@ -18,5 +20,12 @@ describe('plugin_init', () => {
         expect(pluginState.reportStorage).not.toBeNull()
         expect(pluginState.reportOrchestrator).not.toBeNull()
         expect(pluginState.timers.has('report-cleanup')).toBe(true)
+    })
+
+    it('bundles the report template into the plugin source instead of requiring runtime template lookup', () => {
+        const source = readFileSync(path.resolve(process.cwd(), 'src/index.ts'), 'utf-8')
+
+        expect(source).toContain("report-poster.html?raw")
+        expect(source).not.toContain("未找到报告模板 report-poster.html")
     })
 })
