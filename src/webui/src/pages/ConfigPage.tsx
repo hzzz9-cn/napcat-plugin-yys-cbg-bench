@@ -108,6 +108,12 @@ export default function ConfigPage() {
                         onChange={(v) => updateField('maxRenderMs', Number(v) || 0)}
                     />
                     <InputRow
+                        label="截图服务接口"
+                        desc="napcat-plugin-puppeteer 的 render API 地址，同机部署通常保持默认即可"
+                        value={config.renderServiceEndpoint}
+                        onChange={(v) => updateField('renderServiceEndpoint', v.trim())}
+                    />
+                    <InputRow
                         label="报告保留 (小时)"
                         desc="超过该时长的报告会在后台自动清理"
                         value={String(config.reportRetentionHours)}

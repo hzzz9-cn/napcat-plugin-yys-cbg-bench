@@ -49,6 +49,9 @@ function sanitizeConfig(raw: unknown): PluginConfig {
     if (isFiniteNumber(raw.maxRenderMs) && raw.maxRenderMs >= 0) {
         out.maxRenderMs = raw.maxRenderMs;
     }
+    if (typeof raw.renderServiceEndpoint === 'string' && raw.renderServiceEndpoint.trim()) {
+        out.renderServiceEndpoint = raw.renderServiceEndpoint.trim();
+    }
     if (isFiniteNumber(raw.reportRetentionHours) && raw.reportRetentionHours >= 0) {
         out.reportRetentionHours = raw.reportRetentionHours;
     }

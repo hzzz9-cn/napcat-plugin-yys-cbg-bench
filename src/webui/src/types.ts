@@ -22,6 +22,7 @@ export interface PluginConfig {
     cooldownSeconds: number
     requestTimeoutMs: number
     maxRenderMs: number
+    renderServiceEndpoint: string
     reportRetentionHours: number
     maxRecentReports: number
     groupConfigs: Record<string, GroupConfig>

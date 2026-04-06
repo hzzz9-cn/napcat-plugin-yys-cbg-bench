@@ -15,6 +15,7 @@ export const DEFAULT_CONFIG: PluginConfig = {
     cooldownSeconds: 30,
     requestTimeoutMs: 10000,
     maxRenderMs: 15000,
+    renderServiceEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
     reportRetentionHours: 24,
     maxRecentReports: 20,
     groupConfigs: {},
@@ -56,6 +57,13 @@ export function buildConfigSchema(ctx: NapCatPluginContext): PluginConfigSchema 
         ctx.NapCatConfig.number('requestTimeoutMs', '请求超时（毫秒）', 10000, '藏宝阁请求的超时时间'),
         // 渲染超时
         ctx.NapCatConfig.number('maxRenderMs', '渲染超时（毫秒）', 15000, '海报渲染与截图超时'),
+        // 截图服务接口
+        ctx.NapCatConfig.text(
+            'renderServiceEndpoint',
+            '截图服务接口',
+            'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            '部署在同一台服务器时保持默认即可；如 NapCat 端口不同可在此覆盖',
+        ),
         // 报告保留时间
         ctx.NapCatConfig.number('reportRetentionHours', '报告保留时间（小时）', 24, '超过该时间的报告会被清理'),
         // 最近报告上限
