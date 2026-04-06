@@ -10,6 +10,7 @@
  * 保持每个文件职责单一。
  */
 
+import fs from 'node:fs/promises';
 import type { NapCatPluginContext, OB11Message, OB11PostSendMsg } from '../napcat-shim';
 import { pluginState } from '../core/state';
 import { extractFirstCbgUrl } from '../services/cbg-link-service';
@@ -79,6 +80,11 @@ export async function sendReply(
         pluginState.logger.error('发送消息失败:', error);
         return false;
     }
+}
+
+async function buildImageMessageFile(imagePath: string): Promise<string> {
+    const imageBuffer = await fs.readFile(imagePath);
+    return `base64://${imageBuffer.toString('base64')}`;
 }
 
 /**
@@ -230,9 +236,10 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
             ]);
             pluginState.incrementProcessed();
 
+            const imageFile = await buildImageMessageFile(report.imagePath);
             await sendReply(ctx, event, [
                 { type: 'text', data: { text: report.summary } },
-                { type: 'image', data: { file: report.imageUrl } },
+                { type: 'image', data: { file: imageFile } },
             ]);
         } catch (error) {
             const publicMessage = error instanceof ReportError ? error.publicMessage : '分析失败，请稍后再试';

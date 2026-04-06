@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import fs from 'node:fs/promises'
 import { pluginState } from '../../src/core/state'
 import { handleMessage } from '../../src/handlers/message-handler'
 import { ReportError } from '../../src/services/report-error'
@@ -15,6 +16,7 @@ describe('message-handler', () => {
 
     it('replies with processing text then image when a valid link appears in a group message', async () => {
         const ctx = createTestPluginContext()
+        vi.spyOn(fs, 'readFile').mockResolvedValue(Buffer.from('png-data'))
         pluginState.init(ctx)
         pluginState.updateConfig({
             enabled: true,
@@ -26,6 +28,7 @@ describe('message-handler', () => {
             reportOrchestrator: {
                 generateReport: vi.fn().mockResolvedValue({
                     reportId: 'r1',
+                    imagePath: 'D:/tmp/r1.png',
                     imageUrl: '/plugin/yys/files/static/reports/images/r1.png',
                     summary: '夏之蝉 · 测试角色',
                     generatedAt: '2026-04-05T12:00:00.000Z',
@@ -59,7 +62,7 @@ describe('message-handler', () => {
         expect(sendCalls[1]?.[1]).toMatchObject({
             message: [
                 { type: 'text', data: { text: '夏之蝉 · 测试角色' } },
-                { type: 'image', data: { file: '/plugin/yys/files/static/reports/images/r1.png' } },
+                { type: 'image', data: { file: 'base64://cG5nLWRhdGE=' } },
             ],
         })
         expect(pluginState.stats.processed).toBe(1)

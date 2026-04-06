@@ -82,6 +82,7 @@ describe('report-orchestrator-service', () => {
             )
         ).resolves.toEqual({
             reportId: 'r1',
+            imagePath: 'D:/tmp/r1.png',
             imageUrl: '/plugin/yys/files/static/reports/images/r1.png',
             summary: '夏之蝉 · 测试角色',
             generatedAt: '2026-04-05T12:00:00.000Z',

@@ -112,7 +112,7 @@ class PluginState {
         generateReport: (
             sourceUrl: string,
             groupId: string
-        ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+        ) => Promise<{ reportId: string; imagePath: string; imageUrl: string; summary: string; generatedAt: string }>;
     } | null = null;
 
     /** 获取上下文（确保已初始化） */
@@ -281,7 +281,7 @@ class PluginState {
             generateReport: (
                 sourceUrl: string,
                 groupId: string
-            ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+            ) => Promise<{ reportId: string; imagePath: string; imageUrl: string; summary: string; generatedAt: string }>;
         } | null;
     }): void {
         if (typeof input.reportStorage !== 'undefined') {
