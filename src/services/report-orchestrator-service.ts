@@ -15,6 +15,7 @@ type Analyzer = (detail: unknown, sourceUrl: string) => BenchPosterViewModel
 
 interface ReportMetadata {
     reportId: string
+    imagePath: string
     imageUrl: string
     summary: string
     generatedAt: string
@@ -69,6 +70,7 @@ export function createReportOrchestratorService({
 
             return {
                 reportId: paths.reportId,
+                imagePath: paths.imagePath,
                 imageUrl: paths.imageUrl,
                 summary: buildSummary(viewModel),
                 generatedAt: viewModel.generatedAt,
