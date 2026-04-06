@@ -71,16 +71,51 @@ export interface BenchPosterViewModel {
     highlights: string[];
     resources: Array<{ label: string; value: string }>;
     collection: {
-        missingSp: number;
-        missingSsr: number;
+        ownedSp: number;
+        totalSp: number;
+        ownedSsr: number;
+        totalSsr: number;
+        ownedCollab: number;
+        totalCollab: number;
+        ownedUr: number;
+        totalUr: number;
         linkageSummary: string[];
         skinSummary: string[];
     };
-    yuhun: {
+    overview: {
         speedSummary: string;
         critSummary: string;
         inventorySummary: string[];
         suitJudgements: string[];
+    };
+    pve: {
+        headers: ['土蜘蛛', '荒骷髅', '鬼灵歌伎', '平均值'];
+        rows: Array<{
+            soulName: string;
+            values: Array<{
+                heroName: string;
+                metricText: string;
+            }>;
+        }>;
+    };
+    speed: {
+        sections: Array<{
+            title: string;
+            rows: Array<{
+                label: string;
+                totalText: string;
+                slotTexts: string[];
+                extraText?: string;
+            }>;
+        }>;
+        fullSpeedPreview: Array<{
+            position: number;
+            count: number;
+            rows: Array<{
+                label: string;
+                speedText: string;
+            }>;
+        }>;
     };
     warnings: string[];
 }

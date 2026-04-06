@@ -32,7 +32,7 @@ function serializeForInlineScript(viewModel: BenchPosterViewModel): string {
 
 export function createReportRenderService({
     templateHtml,
-    launchBrowser = chromium.launch as LaunchBrowser,
+    launchBrowser = ((options) => chromium.launch(options)) as LaunchBrowser,
 }: ReportRenderServiceOptions): ReportRenderService {
     const renderHtml = (viewModel: BenchPosterViewModel): string => {
         return templateHtml.replace('__REPORT_JSON__', serializeForInlineScript(viewModel))

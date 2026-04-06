@@ -18,16 +18,35 @@ function createViewModel(): BenchPosterViewModel {
         highlights: [],
         resources: [],
         collection: {
-            missingSp: 0,
-            missingSsr: 0,
+            ownedSp: 0,
+            totalSp: 0,
+            ownedSsr: 0,
+            totalSsr: 0,
+            ownedCollab: 0,
+            totalCollab: 0,
+            ownedUr: 0,
+            totalUr: 0,
             linkageSummary: [],
             skinSummary: [],
         },
-        yuhun: {
+        overview: {
             speedSummary: '',
             critSummary: '',
             inventorySummary: [],
             suitJudgements: [],
+        },
+        pve: {
+            headers: ['土蜘蛛', '荒骷髅', '鬼灵歌伎', '平均值'],
+            rows: [],
+        },
+        speed: {
+            sections: [
+                { title: '散件一速', rows: [] },
+                { title: '散件命中一速', rows: [] },
+                { title: '散件抵抗一速', rows: [] },
+                { title: '套装一速', rows: [] },
+            ],
+            fullSpeedPreview: [],
         },
         warnings: [],
     }

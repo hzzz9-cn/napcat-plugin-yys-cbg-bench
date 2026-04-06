@@ -6,16 +6,21 @@
     <title>阴阳师藏宝阁分析海报</title>
     <style>
       :root {
-        --bg: #0f131a;
-        --bg-glow: #243247;
-        --panel: rgba(14, 20, 30, 0.82);
-        --panel-soft: rgba(255, 255, 255, 0.06);
-        --line: rgba(255, 255, 255, 0.12);
-        --text: #f7f2e8;
-        --muted: rgba(247, 242, 232, 0.72);
-        --accent: #d6b17f;
-        --accent-soft: rgba(214, 177, 127, 0.16);
-        --danger: #ff8f7a;
+        color-scheme: dark;
+        --bg: #0b1016;
+        --bg-soft: #111821;
+        --panel: rgba(255, 255, 255, 0.028);
+        --panel-strong: rgba(255, 255, 255, 0.045);
+        --line: rgba(255, 255, 255, 0.06);
+        --line-strong: rgba(191, 157, 103, 0.14);
+        --text: #f4ebde;
+        --muted: rgba(244, 235, 222, 0.64);
+        --muted-soft: rgba(244, 235, 222, 0.48);
+        --accent: #c4a26e;
+        --accent-soft: rgba(191, 157, 103, 0.08);
+        --chip-bg: rgba(255, 255, 255, 0.05);
+        --chip-strong: rgba(244, 234, 219, 0.92);
+        --chip-text: #162230;
       }
 
       * {
@@ -24,386 +29,821 @@
 
       body {
         margin: 0;
-        font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+        font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
         color: var(--text);
         background:
-          radial-gradient(circle at top left, rgba(214, 177, 127, 0.12), transparent 24%),
-          radial-gradient(circle at top right, rgba(67, 97, 144, 0.28), transparent 30%),
-          linear-gradient(160deg, #0a0e14 0%, #131a25 55%, #1b2432 100%);
+          radial-gradient(circle at top left, rgba(164, 132, 84, 0.14), transparent 20%),
+          linear-gradient(180deg, #090d12 0%, #11161d 42%, #161d26 100%);
       }
 
       .poster {
         width: 1400px;
-        min-height: 1800px;
-        padding: 44px;
-      }
-
-      .frame {
-        min-height: 1712px;
         padding: 34px;
-        border-radius: 32px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
         background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
-          radial-gradient(circle at top right, rgba(214, 177, 127, 0.08), transparent 30%),
-          var(--bg);
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+          linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.004)),
+          #0a0f15;
       }
 
-      .hero {
-        position: relative;
-        overflow: hidden;
-        padding: 32px;
+      .refined-shell {
+        display: grid;
+        gap: 18px;
+        padding: 24px;
+        border-radius: 34px;
+        border: 1px solid var(--line-strong);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.006)),
+          var(--bg);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
+      }
+
+      .refined-hero {
+        display: grid;
+        grid-template-columns: 1.18fr 0.82fr;
+        gap: 22px;
+        padding: 28px;
         border-radius: 28px;
         background:
-          linear-gradient(135deg, rgba(214, 177, 127, 0.14), rgba(214, 177, 127, 0.02) 46%),
-          linear-gradient(160deg, rgba(36, 50, 71, 0.9), rgba(15, 19, 26, 0.96));
-        border: 1px solid rgba(214, 177, 127, 0.16);
+          linear-gradient(135deg, rgba(191, 157, 103, 0.08), rgba(255, 255, 255, 0.015) 45%, rgba(255, 255, 255, 0.01)),
+          #121820;
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
 
-      .hero::after {
-        content: "";
-        position: absolute;
-        inset: auto -110px -130px auto;
-        width: 320px;
-        height: 320px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(214, 177, 127, 0.18), transparent 68%);
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.06);
+      .refined-mark,
+      .refined-kicker {
         color: var(--accent);
-        font-size: 18px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .refined-title,
+      .refined-heading {
+        font-family: "STZhongsong", "Songti SC", serif;
+      }
+
+      .refined-title {
+        margin-top: 14px;
+        font-size: 60px;
+        line-height: 1.04;
+        color: #f7ebd8;
+        letter-spacing: 0.01em;
+      }
+
+      .refined-sub {
+        margin-top: 10px;
+        font-size: 24px;
+        color: rgba(244, 234, 219, 0.82);
+      }
+
+      .refined-meta {
+        margin-top: 12px;
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--muted-soft);
+      }
+
+      .refined-price-card {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 24px 26px;
+        border-radius: 24px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)),
+          var(--panel);
+        border: 1px solid var(--line);
+        text-align: right;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .refined-status {
+        color: var(--accent);
+        font-size: 16px;
         letter-spacing: 0.08em;
       }
 
-      .hero-grid {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
-        gap: 28px;
-        margin-top: 26px;
+      .refined-price {
+        margin-top: 12px;
+        font-size: 72px;
+        font-weight: 800;
+        line-height: 1;
+        color: #f6e8cf;
       }
 
-      .hero-title h1 {
-        margin: 0;
-        font-size: 58px;
-        line-height: 1.08;
+      .refined-note {
+        margin-top: 14px;
+        color: var(--muted-soft);
+        font-size: 15px;
       }
 
-      .hero-title p {
-        margin: 12px 0 0;
-        font-size: 22px;
-        color: var(--muted);
-      }
-
-      .hero-tags {
+      .refined-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 24px;
-      }
-
-      .hero-tag {
-        padding: 10px 16px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        font-size: 18px;
-      }
-
-      .price-card {
-        padding: 24px;
-        border-radius: 24px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .price-card .label,
-      .section .label,
-      .metric .label,
-      .list-title {
-        color: var(--accent);
-        font-size: 17px;
-        letter-spacing: 0.08em;
-      }
-
-      .price-card .price {
-        margin-top: 18px;
-        font-size: 62px;
-        font-weight: 700;
-        line-height: 1;
-      }
-
-      .price-card .meta {
-        margin-top: 14px;
-        display: grid;
         gap: 10px;
-        color: var(--muted);
-        font-size: 18px;
+        padding: 2px 2px 0;
       }
 
-      .main-grid {
+      .refined-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 13px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: #ead8bb;
+        font-size: 14px;
+      }
+
+      .refined-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .refined-stat,
+      .refined-panel {
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.008)),
+          rgba(255, 255, 255, 0.012);
+      }
+
+      .refined-stat {
+        display: grid;
+        padding: 8px 0;
+        overflow: hidden;
+      }
+
+      .refined-stat-row {
+        min-height: 72px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 18px;
+      }
+
+      .refined-stat-row + .refined-stat-row {
+        border-top: 1px solid var(--line);
+      }
+
+      .refined-stat-row span {
+        color: var(--accent);
+        font-size: 15px;
+        letter-spacing: 0.04em;
+      }
+
+      .refined-stat-row strong {
+        color: #f7ebd8;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.05;
+        text-align: right;
+      }
+
+      .refined-main {
         display: grid;
         grid-template-columns: 1.08fr 0.92fr;
-        gap: 22px;
-        margin-top: 24px;
+        gap: 18px;
       }
 
-      .stack {
+      .refined-left,
+      .refined-side,
+      .refined-bottom {
         display: grid;
-        gap: 22px;
+        gap: 18px;
       }
 
-      .section {
-        padding: 24px;
-        border-radius: 26px;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        backdrop-filter: blur(8px);
+      .refined-bottom {
+        grid-template-columns: 0.92fr 1.08fr;
       }
 
-      .section h2 {
-        margin: 10px 0 0;
-        font-size: 32px;
+      .refined-panel {
+        padding: 20px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
       }
 
-      .metric-grid {
+      .refined-heading {
+        margin-top: 10px;
+        font-size: 30px;
+        color: var(--text);
+        line-height: 1.18;
+      }
+
+      .refined-empty {
+        margin-top: 14px;
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.025);
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .pve-row {
+        display: grid;
+        grid-template-columns: 92px repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 9px;
+      }
+
+      .pve-row.header {
+        margin-top: 14px;
+      }
+
+      .pve-name,
+      .pve-cell {
+        padding: 11px 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.035);
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .pve-row.header .pve-name,
+      .pve-row.header .pve-cell {
+        background: rgba(255, 255, 255, 0.025);
+        color: var(--muted);
+      }
+
+      .pve-name {
+        text-align: left;
+        color: #ead8bb;
+      }
+
+      .refined-pve-note {
+        min-height: 0;
+      }
+
+      .note-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
-        margin-top: 18px;
+        margin-top: 16px;
       }
 
-      .metric {
-        min-height: 126px;
-        padding: 18px;
-        border-radius: 20px;
-        background: var(--panel-soft);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+      .note-item {
+        display: grid;
+        gap: 8px;
+        padding: 18px 18px;
+        border-radius: 18px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.008)),
+          rgba(255, 255, 255, 0.012);
+        border: 1px solid var(--line);
       }
 
-      .metric .value {
-        margin-top: 14px;
-        font-size: 40px;
-        font-weight: 700;
+      .note-item span {
+        color: var(--accent);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+      }
+
+      .note-item strong {
+        color: #f7ebd8;
+        font-size: 24px;
         line-height: 1.15;
       }
 
-      .metric .hint {
-        margin-top: 10px;
+      .note-item em {
+        font-style: normal;
         color: var(--muted);
-        font-size: 18px;
+        font-size: 14px;
+        line-height: 1.5;
       }
 
-      .list {
+      .refined-speed-row {
+        margin-top: 14px;
+        padding: 14px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .refined-speed-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        color: #ead8bb;
+      }
+
+      .refined-speed-head strong {
+        font-size: 26px;
+        color: #f6e8cf;
+      }
+
+      .refined-speed-slots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .refined-speed-slots span {
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: var(--chip-strong);
+        color: var(--chip-text);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .refined-speed-extra {
+        margin-top: 8px;
+        color: #d8e5f7;
+        font-size: 14px;
+      }
+
+      .refined-suit-grid,
+      .refined-resource-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .refined-suit-card,
+      .refined-resource-card {
+        display: grid;
+        gap: 6px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .refined-suit-card span,
+      .refined-resource-card span {
+        color: var(--muted);
+      }
+
+      .refined-suit-card strong,
+      .refined-resource-card strong {
+        font-size: 24px;
+        color: #f6e8cf;
+        line-height: 1.15;
+      }
+
+      .refined-profile-list {
         display: grid;
         gap: 10px;
-        margin: 16px 0 0;
-        padding: 0;
-        list-style: none;
+        margin-top: 16px;
       }
 
-      .list li {
+      .refined-profile-list div {
         padding: 12px 14px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 20px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.025);
+        color: #f3eadc;
+        line-height: 1.45;
       }
 
-      .resource-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 18px;
-      }
-
-      .resource-item {
-        padding: 18px;
-        border-radius: 20px;
-        background: rgba(214, 177, 127, 0.08);
-        border: 1px solid rgba(214, 177, 127, 0.14);
-      }
-
-      .resource-item .name {
-        color: var(--muted);
-        font-size: 18px;
-      }
-
-      .resource-item .value {
-        margin-top: 10px;
-        font-size: 36px;
-        font-weight: 700;
-      }
-
-      .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 18px;
-      }
-
-      .summary-box {
-        padding: 18px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      .summary-box .big {
-        margin-top: 12px;
-        font-size: 48px;
-        font-weight: 700;
-      }
-
-      .footer {
+      .refined-skins {
         display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .refined-skins span {
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: rgba(191, 157, 103, 0.08);
+        color: #ead8bb;
+        font-size: 12px;
+      }
+
+      .refined-full-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .refined-full-card {
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .refined-full-head {
+        display: flex;
+        align-items: baseline;
         justify-content: space-between;
-        gap: 20px;
-        margin-top: 24px;
-        padding: 18px 22px;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: var(--muted);
-        font-size: 16px;
+        gap: 8px;
+        color: #ead8bb;
       }
 
-      .warning-list li {
-        background: rgba(255, 143, 122, 0.08);
-        border-color: rgba(255, 143, 122, 0.16);
-        color: #ffd0c6;
+      .refined-full-head strong {
+        font-size: 25px;
+        color: #f6e8cf;
       }
 
-      .empty {
+      .full-speed-values {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .full-speed-values span {
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: rgba(255, 248, 235, 0.1);
+        color: rgba(255, 244, 214, 0.96);
+        font-size: 12px;
+        font-weight: 700;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+      }
+
+      .refined-footer {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid var(--line);
         color: var(--muted);
-        font-size: 19px;
+        font-size: 14px;
+        word-break: break-all;
       }
     </style>
   </head>
   <body>
     <div class="poster">
-      <div id="poster-root" class="frame"></div>
+      <div id="poster-root" class="refined-shell"></div>
     </div>
 
     <script id="report-data" type="application/json">__REPORT_JSON__</script>
     <script>
       const data = JSON.parse(document.getElementById('report-data').textContent || '{}')
 
-      function renderList(items, className) {
-        if (!Array.isArray(items) || items.length === 0) {
-          return '<div class="empty">暂无可展示内容</div>'
-        }
-        return `<ul class="list ${className || ''}">${items.map((item) => `<li>${item}</li>`).join('')}</ul>`
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
       }
 
-      function renderResourceCards(items) {
-        if (!Array.isArray(items) || items.length === 0) {
-          return '<div class="empty">暂无资源摘要</div>'
+      function renderEmpty(text) {
+        return `<div class="refined-empty">${escapeHtml(text || '暂无可展示内容')}</div>`
+      }
+
+      function trimPrefix(text, prefix) {
+        if (typeof text !== 'string') return ''
+        return text.startsWith(prefix) ? text.slice(prefix.length).trim() : ''
+      }
+
+      function findSummaryValue(items, prefix) {
+        if (!Array.isArray(items)) return ''
+        const target = items.find((item) => typeof item === 'string' && item.startsWith(prefix))
+        return trimPrefix(target, prefix)
+      }
+
+      function findBestPveRow(rows) {
+        if (!Array.isArray(rows)) return null
+        let best = null
+        for (const row of rows) {
+          if (!row || !Array.isArray(row.values) || row.values.length === 0) continue
+          const avgCell = row.values[row.values.length - 1]
+          const raw = String(avgCell && avgCell.metricText ? avgCell.metricText : '')
+          const numeric = Number(raw.replace(/[^\d.-]/g, ''))
+          if (!Number.isFinite(numeric)) continue
+          if (!best || numeric > best.numeric) {
+            best = { row, numeric, text: raw }
+          }
         }
-        return `<div class="resource-grid">${items
+        return best
+      }
+
+      function renderTags(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          return ''
+        }
+        return `<div class="refined-tags">${items
+          .filter((item) => item != null && String(item).trim())
+          .map((item) => `<span class="refined-tag">${escapeHtml(item)}</span>`)
+          .join('')}</div>`
+      }
+
+      function buildHeroTags() {
+        const tags = []
+        const pushTag = (value) => {
+          const text = String(value ?? '').trim()
+          if (!text || tags.includes(text)) return
+          tags.push(text)
+        }
+
+        pushTag(data.overview && data.overview.speedSummary)
+
+        const suitSection = Array.isArray(data.speed && data.speed.sections) ? data.speed.sections[3] : null
+        const firstSuitRow = suitSection && Array.isArray(suitSection.rows) ? suitSection.rows[0] : null
+        if (firstSuitRow) {
+          pushTag(`${firstSuitRow.label}一速${String(firstSuitRow.totalText || '').replace(/^\+/, '')}`)
+        }
+
+        const suitJudgements = Array.isArray(data.overview && data.overview.suitJudgements)
+          ? data.overview.suitJudgements
+          : []
+        for (const item of suitJudgements) {
+          if (typeof item !== 'string') continue
+          if (item.includes('一速')) continue
+          pushTag(item)
+        }
+
+        const highlights = Array.isArray(data.highlights) ? data.highlights : []
+        for (const item of highlights) {
+          if (typeof item !== 'string') continue
+          if (item.includes('一速')) continue
+          pushTag(item)
+        }
+
+        return tags.slice(0, 8)
+      }
+
+      function buildStatCards() {
+        return [
+          [
+            { label: 'SP', value: `${data.collection.ownedSp ?? 0}/${data.collection.totalSp ?? data.collection.ownedSp ?? 0}` },
+            { label: 'SSR', value: `${data.collection.ownedSsr ?? 0}/${data.collection.totalSsr ?? data.collection.ownedSsr ?? 0}` },
+          ],
+          [
+            { label: '联动', value: `${data.collection.ownedCollab ?? 0}/${data.collection.totalCollab ?? data.collection.ownedCollab ?? 0}` },
+            { label: 'UR', value: `${data.collection.ownedUr ?? 0}/${data.collection.totalUr ?? data.collection.ownedUr ?? 0}` },
+          ],
+          [
+            { label: '散件一速', value: trimPrefix(data.overview.speedSummary || '', '散件一速') || '--' },
+            { label: '15级御魂', value: findSummaryValue(data.overview.inventorySummary, '15级御魂') || '--' },
+          ],
+          [
+            { label: '满级御魂', value: findSummaryValue(data.overview.inventorySummary, '满级御魂') || '--' },
+            { label: '御魂加成分', value: findSummaryValue(data.overview.inventorySummary, '御魂加成分') || '--' },
+          ],
+        ]
+      }
+
+      function renderStatCards() {
+        return `<div class="refined-stats">${buildStatCards()
           .map(
-            (item) => `
-              <div class="resource-item">
-                <div class="name">${item.label}</div>
-                <div class="value">${item.value}</div>
+            (card) => `
+              <div class="refined-stat">
+                ${card
+                  .map(
+                    (row) => `
+                      <div class="refined-stat-row">
+                        <span>${escapeHtml(row.label)}</span>
+                        <strong>${escapeHtml(row.value)}</strong>
+                      </div>
+                    `
+                  )
+                  .join('')}
               </div>
             `
           )
           .join('')}</div>`
       }
 
+      function renderPveRows() {
+        if (!data.pve || !Array.isArray(data.pve.rows) || data.pve.rows.length === 0) {
+          return renderEmpty('暂无估算数据')
+        }
+
+        const headers = ['方案'].concat(Array.isArray(data.pve.headers) ? data.pve.headers : [])
+        const headHtml = `
+          <div class="pve-row header">
+            <div class="pve-name">${escapeHtml(headers[0])}</div>
+            ${headers.slice(1).map((header) => `<div class="pve-cell">${escapeHtml(header)}</div>`).join('')}
+          </div>
+        `
+
+        const rowsHtml = data.pve.rows
+          .map((row) => {
+            const values = Array.isArray(row.values) ? row.values : []
+            return `
+              <div class="pve-row">
+                <div class="pve-name">${escapeHtml(row.soulName || '--')}</div>
+                ${values
+                  .map((value) => `<div class="pve-cell">${escapeHtml(value.metricText || '--')}</div>`)
+                  .join('')}
+              </div>
+            `
+          })
+          .join('')
+
+        return `${headHtml}${rowsHtml}`
+      }
+
+      function renderPveNotes() {
+        const best = findBestPveRow(data.pve && data.pve.rows)
+        const avgLabel = Array.isArray(data.pve && data.pve.headers) && data.pve.headers.length > 0 ? data.pve.headers[data.pve.headers.length - 1] : '平均值'
+        const noteCards = [
+          {
+            label: '当前推荐',
+            value: best ? best.row.soulName : '--',
+            desc: best ? `${avgLabel} ${best.text}` : '暂无推荐结果',
+          },
+          {
+            label: '计算前提',
+            value: '须佐之男 / 满暴击',
+            desc: '基础攻击 4154 / 暴击 12% / 爆伤 150%',
+          },
+          {
+            label: '估算逻辑',
+            value: '总攻击 × 爆伤',
+            desc: '计入御魂攻击、攻击加成、暴伤与首领御魂固定属性',
+          },
+          {
+            label: '读图建议',
+            value: '先看均值，再看单列',
+            desc: '均值看综合方案，单列更适合看首领位特化',
+          },
+        ]
+
+        return `<div class="note-grid">${noteCards
+          .map(
+            (card) => `
+              <div class="note-item">
+                <span>${escapeHtml(card.label)}</span>
+                <strong>${escapeHtml(card.value)}</strong>
+                <em>${escapeHtml(card.desc)}</em>
+              </div>
+            `
+          )
+          .join('')}</div>`
+      }
+
+      function renderSpeedRows(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          return renderEmpty('暂无可展示内容')
+        }
+
+        return rows
+          .map((row) => {
+            const slotTexts = Array.isArray(row.slotTexts) ? row.slotTexts : []
+            return `
+              <div class="refined-speed-row">
+                <div class="refined-speed-head">
+                  <span>${escapeHtml(row.label || '--')}</span>
+                  <strong>${escapeHtml(row.totalText || '--')}</strong>
+                </div>
+                <div class="refined-speed-slots">
+                  ${slotTexts.map((slot) => `<span>${escapeHtml(slot)}</span>`).join('')}
+                </div>
+                ${row.extraText ? `<div class="refined-speed-extra">${escapeHtml(row.extraText)}</div>` : ''}
+              </div>
+            `
+          })
+          .join('')
+      }
+
+      function renderSuitCards(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          return renderEmpty('暂无套装一速数据')
+        }
+
+        return `<div class="refined-suit-grid">${rows
+          .map(
+            (row) => `
+              <div class="refined-suit-card">
+                <span>${escapeHtml(row.label || '--')}</span>
+                <strong>${escapeHtml((row.totalText || '--').replace(/^\+/, ''))}</strong>
+              </div>
+            `
+          )
+          .join('')}</div>`
+      }
+
+      function renderResources(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          return renderEmpty('暂无资源摘要')
+        }
+
+        return `<div class="refined-resource-grid">${items
+          .map(
+            (item) => `
+              <div class="refined-resource-card">
+                <span>${escapeHtml(item.label || '--')}</span>
+                <strong>${escapeHtml(item.value || '--')}</strong>
+              </div>
+            `
+          )
+          .join('')}</div>`
+      }
+
+      function renderProfileList(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          return renderEmpty('暂无账号画像')
+        }
+
+        return `<div class="refined-profile-list">${items.map((item) => `<div>${escapeHtml(item)}</div>`).join('')}</div>`
+      }
+
+      function renderSkinTags(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          return ''
+        }
+
+        return `<div class="refined-skins">${items.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>`
+      }
+
+      function renderFullSpeedPreview() {
+        if (!data.speed || !Array.isArray(data.speed.fullSpeedPreview) || data.speed.fullSpeedPreview.length === 0) {
+          return renderEmpty('暂无满速御魂')
+        }
+
+        return `<div class="refined-full-grid">${data.speed.fullSpeedPreview
+          .map((group) => {
+            const values = Array.isArray(group.rows) ? group.rows : []
+            return `
+              <div class="refined-full-card">
+                <div class="refined-full-head">
+                  <span>${escapeHtml(`${group.position || '--'}号位`)}</span>
+                  <strong>${escapeHtml(group.count ?? 0)}</strong>
+                </div>
+                ${
+                  values.length > 0
+                    ? `<div class="full-speed-values">${values.map((row) => `<span>${escapeHtml(row.speedText || '--')}</span>`).join('')}</div>`
+                    : '<div class="refined-empty" style="margin-top:10px;padding:10px 12px;">暂无满速御魂</div>'
+                }
+              </div>
+            `
+          })
+          .join('')}</div>`
+      }
+
+      const speedSections = Array.isArray(data.speed && data.speed.sections) ? data.speed.sections : []
+      const looseSpeedRows = speedSections.slice(0, 3).flatMap((section) => (Array.isArray(section.rows) ? section.rows : []))
+      const suitSpeedRows = speedSections[3] && Array.isArray(speedSections[3].rows) ? speedSections[3].rows : []
+
       document.getElementById('poster-root').innerHTML = `
-        <section class="hero">
-          <div class="eyebrow">藏宝阁帐号报告</div>
-          <div class="hero-grid">
-            <div>
-              <div class="hero-title">
-                <h1>${data.hero.serverName || '未知服务器'} · ${data.hero.equipName || '未命名帐号'}</h1>
-                <p>${data.hero.areaName || '未知大区'} · 生成于 ${data.generatedAt || '--'}</p>
-              </div>
-              <div class="hero-tags">
-                ${(data.highlights || []).slice(0, 4).map((item) => `<div class="hero-tag">${item}</div>`).join('')}
-              </div>
+        <section class="refined-hero">
+          <div class="refined-copy">
+            <div class="refined-mark">YYS CBG ACCOUNT REPORT</div>
+            <div class="refined-title">${escapeHtml(data.hero && data.hero.equipName ? data.hero.equipName : '未命名账号')}</div>
+            <div class="refined-sub">${escapeHtml(data.hero && data.hero.serverName ? data.hero.serverName : '未知服务器')}</div>
+            <div class="refined-meta">${escapeHtml(data.hero && data.hero.areaName ? data.hero.areaName : '未知大区')} / ${escapeHtml(data.hero && data.hero.daysText ? data.hero.daysText : '--')} / ${escapeHtml(data.generatedAt || '--')}</div>
+          </div>
+          <div class="refined-price-card">
+            <div class="refined-status">${escapeHtml(data.hero && data.hero.statusText ? data.hero.statusText : '--')}</div>
+            <div class="refined-price">${escapeHtml(data.hero && data.hero.priceText ? data.hero.priceText : '--')}</div>
+            <div class="refined-note">藏宝阁账号基准画像</div>
+          </div>
+        </section>
+
+        ${renderTags(buildHeroTags())}
+
+        ${renderStatCards()}
+
+        <section class="refined-main">
+          <div class="refined-left">
+            <div class="refined-panel refined-pve">
+              <div class="refined-kicker">PVE Estimate</div>
+              <div class="refined-heading">须佐之男面板估算预览</div>
+              ${renderPveRows()}
             </div>
-            <div class="price-card">
-              <div class="label">快速结论</div>
-              <div class="price">${data.hero.priceText || '--'}</div>
-              <div class="meta">
-                <div>状态：${data.hero.statusText || '--'}</div>
-                <div>在线时长：${data.hero.daysText || '--'}</div>
-                <div>报告编号：${data.reportId || '--'}</div>
-              </div>
+            <div class="refined-panel refined-pve-note">
+              <div class="refined-kicker">PVE Guide</div>
+              <div class="refined-heading">读图前提</div>
+              ${renderPveNotes()}
+            </div>
+          </div>
+
+          <div class="refined-side">
+            <div class="refined-panel refined-speed">
+              <div class="refined-kicker">Speed Preview</div>
+              <div class="refined-heading">一速预览</div>
+              ${renderSpeedRows(looseSpeedRows)}
+            </div>
+            <div class="refined-panel refined-suit">
+              <div class="refined-kicker">Suit Speed</div>
+              <div class="refined-heading">套速概览</div>
+              ${renderSuitCards(suitSpeedRows)}
             </div>
           </div>
         </section>
 
-        <div class="main-grid">
-          <div class="stack">
-            <section class="section">
-              <div class="label">核心资源</div>
-              <h2>账号基础盘点</h2>
-              ${renderResourceCards(data.resources)}
-            </section>
-
-            <section class="section">
-              <div class="label">御魂亮点</div>
-              <h2>${data.yuhun.speedSummary || '速度待补充'} / ${data.yuhun.critSummary || '暴击待补充'}</h2>
-              <div class="metric-grid">
-                <div class="metric">
-                  <div class="label">库存摘要</div>
-                  <div class="hint">用于快速看御魂底盘是否充足</div>
-                  ${renderList(data.yuhun.inventorySummary)}
-                </div>
-                <div class="metric">
-                  <div class="label">关键判断</div>
-                  <div class="hint">首版保留结构化结论占位</div>
-                  ${renderList(data.yuhun.suitJudgements)}
-                </div>
-              </div>
-            </section>
+        <section class="refined-bottom">
+          <div class="refined-panel refined-resource">
+            <div class="refined-kicker">Resources</div>
+            <div class="refined-heading">核心资源</div>
+            ${renderResources(data.resources)}
           </div>
-
-          <div class="stack">
-            <section class="section">
-              <div class="label">图鉴与皮肤</div>
-              <h2>收藏完成度</h2>
-              <div class="summary-grid">
-                <div class="summary-box">
-                  <div class="label">缺失 SP</div>
-                  <div class="big">${data.collection.missingSp ?? 0}</div>
-                </div>
-                <div class="summary-box">
-                  <div class="label">缺失 SSR</div>
-                  <div class="big">${data.collection.missingSsr ?? 0}</div>
-                </div>
-              </div>
-              <div class="list-title" style="margin-top:18px">联动摘要</div>
-              ${renderList(data.collection.linkageSummary)}
-              <div class="list-title" style="margin-top:18px">皮肤摘要</div>
-              ${renderList(data.collection.skinSummary)}
-            </section>
-
-            <section class="section">
-              <div class="label">注意事项</div>
-              <h2>风险与兼容性提示</h2>
-              ${renderList(data.warnings, 'warning-list')}
-            </section>
+          <div class="refined-panel refined-profile">
+            <div class="refined-kicker">Profile</div>
+            <div class="refined-heading">收藏与摘要</div>
+            ${renderProfileList(data.collection && data.collection.linkageSummary)}
+            ${renderSkinTags(data.collection && data.collection.skinSummary)}
           </div>
-        </div>
+        </section>
 
-        <footer class="footer">
-          <div>来源链接：${data.sourceUrl || '--'}</div>
-          <div>NapCat · 阴阳师藏宝阁分析</div>
-        </footer>
+        <section class="refined-panel refined-full">
+          <div class="refined-kicker">Full Speed</div>
+          <div class="refined-heading">各位置满速情况</div>
+          ${renderFullSpeedPreview()}
+        </section>
+
+        <footer class="refined-footer">来源链接：${escapeHtml(data.sourceUrl || '--')}</footer>
       `
     </script>
   </body>

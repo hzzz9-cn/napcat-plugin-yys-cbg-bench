@@ -43,16 +43,35 @@ const _typecheckViewModel: BenchPosterViewModel = {
     highlights: ['亮点1'],
     resources: [{ label: '资源', value: '值' }],
     collection: {
-        missingSp: 1,
-        missingSsr: 2,
+        ownedSp: 1,
+        totalSp: 1,
+        ownedSsr: 2,
+        totalSsr: 2,
+        ownedCollab: 0,
+        totalCollab: 0,
+        ownedUr: 0,
+        totalUr: 0,
         linkageSummary: ['联动1'],
         skinSummary: ['皮肤1'],
     },
-    yuhun: {
+    overview: {
         speedSummary: '速度',
         critSummary: '暴击',
         inventorySummary: ['数量'],
         suitJudgements: ['套装'],
+    },
+    pve: {
+        headers: ['土蜘蛛', '荒骷髅', '鬼灵歌伎', '平均值'],
+        rows: [],
+    },
+    speed: {
+        sections: [
+            { title: '散件一速', rows: [] },
+            { title: '散件命中一速', rows: [] },
+            { title: '散件抵抗一速', rows: [] },
+            { title: '套装一速', rows: [] },
+        ],
+        fullSpeedPreview: [],
     },
     warnings: ['注意事项'],
 }
