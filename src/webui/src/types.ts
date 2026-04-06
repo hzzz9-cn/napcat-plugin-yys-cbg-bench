@@ -10,19 +10,35 @@ export interface PluginStatus {
         todayProcessed: number
         lastUpdateDay: string
     }
+    reports: ReportListItem[]
+    recentErrors: string[]
 }
 
 export interface PluginConfig {
     enabled: boolean
     debug: boolean
+    autoParseLinks: boolean
     commandPrefix: string
     cooldownSeconds: number
-    groupConfigs?: Record<string, GroupConfig>
-    // TODO: 在这里添加你的插件配置项类型
+    requestTimeoutMs: number
+    maxRenderMs: number
+    reportRetentionHours: number
+    maxRecentReports: number
+    groupConfigs: Record<string, GroupConfig>
 }
 
 export interface GroupConfig {
     enabled?: boolean
+}
+
+export interface ReportListItem {
+    reportId: string
+    sourceUrl: string
+    groupId: string
+    imageUrl: string
+    generatedAt: string
+    status: 'success' | 'error'
+    summary: string
 }
 
 export interface GroupInfo {

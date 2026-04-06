@@ -12,14 +12,19 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { NapCatPluginContext, PluginLogger } from 'napcat-types/napcat-onebot/network/plugin/types';
+import type { NapCatPluginContext, PluginLogger } from '../napcat-shim';
 import { DEFAULT_CONFIG } from '../config';
-import type { PluginConfig, GroupConfig } from '../types';
+import type { PluginConfig, GroupConfig, ReportListItem } from '../types';
+import type { ReportStorageService } from '../services/report-storage-service';
 
 // ==================== 配置清洗工具 ====================
 
 function isObject(v: unknown): v is Record<string, unknown> {
     return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+function isFiniteNumber(v: unknown): v is number {
+    return typeof v === 'number' && Number.isFinite(v);
 }
 
 /**
@@ -33,8 +38,23 @@ function sanitizeConfig(raw: unknown): PluginConfig {
 
     if (typeof raw.enabled === 'boolean') out.enabled = raw.enabled;
     if (typeof raw.debug === 'boolean') out.debug = raw.debug;
+    if (typeof raw.autoParseLinks === 'boolean') out.autoParseLinks = raw.autoParseLinks;
     if (typeof raw.commandPrefix === 'string') out.commandPrefix = raw.commandPrefix;
-    if (typeof raw.cooldownSeconds === 'number') out.cooldownSeconds = raw.cooldownSeconds;
+    if (isFiniteNumber(raw.cooldownSeconds) && raw.cooldownSeconds >= 0) {
+        out.cooldownSeconds = raw.cooldownSeconds;
+    }
+    if (isFiniteNumber(raw.requestTimeoutMs) && raw.requestTimeoutMs >= 0) {
+        out.requestTimeoutMs = raw.requestTimeoutMs;
+    }
+    if (isFiniteNumber(raw.maxRenderMs) && raw.maxRenderMs >= 0) {
+        out.maxRenderMs = raw.maxRenderMs;
+    }
+    if (isFiniteNumber(raw.reportRetentionHours) && raw.reportRetentionHours >= 0) {
+        out.reportRetentionHours = raw.reportRetentionHours;
+    }
+    if (isFiniteNumber(raw.maxRecentReports) && raw.maxRecentReports >= 0) {
+        out.maxRecentReports = raw.maxRecentReports;
+    }
 
     // 群配置清洗
     if (isObject(raw.groupConfigs)) {
@@ -42,13 +62,10 @@ function sanitizeConfig(raw: unknown): PluginConfig {
             if (isObject(groupConfig)) {
                 const cfg: GroupConfig = {};
                 if (typeof groupConfig.enabled === 'boolean') cfg.enabled = groupConfig.enabled;
-                // TODO: 在这里添加你的群配置项清洗
                 out.groupConfigs[groupId] = cfg;
             }
         }
     }
-
-    // TODO: 在这里添加你的配置项清洗逻辑
 
     return out;
 }
@@ -78,6 +95,23 @@ class PluginState {
         lastUpdateDay: new Date().toDateString(),
     };
 
+    /** 最近报告列表 */
+    reports: ReportListItem[] = [];
+
+    /** 最近错误摘要 */
+    recentErrors: string[] = [];
+
+    /** 报告存储服务（运行时注入） */
+    reportStorage: ReportStorageService | null = null;
+
+    /** 报告编排服务（运行时注入） */
+    reportOrchestrator: {
+        generateReport: (
+            sourceUrl: string,
+            groupId: string
+        ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+    } | null = null;
+
     /** 获取上下文（确保已初始化） */
     get ctx(): NapCatPluginContext {
         if (!this._ctx) throw new Error('PluginState 尚未初始化，请先调用 init()');
@@ -99,6 +133,7 @@ class PluginState {
         this.startTime = Date.now();
         this.loadConfig();
         this.ensureDataDir();
+        this.loadReports();
         this.fetchSelfId();
     }
 
@@ -130,6 +165,15 @@ class PluginState {
         }
         this.timers.clear();
         this.saveConfig();
+        this.reportStorage = null;
+        this.reportOrchestrator = null;
+        this.reports = [];
+        this.recentErrors = [];
+        this.stats = {
+            processed: 0,
+            todayProcessed: 0,
+            lastUpdateDay: new Date().toDateString(),
+        };
         this._ctx = null;
     }
 
@@ -182,6 +226,90 @@ class PluginState {
         }
     }
 
+    // ==================== 报告索引管理 ====================
+
+    private ensureReportsDir(): void {
+        const dir = path.join(this.ctx.dataPath, 'reports');
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    }
+
+    private getReportsIndexFile(): string {
+        return path.join('reports', 'index.json');
+    }
+
+    private trimReports(reports: ReportListItem[]): ReportListItem[] {
+        const limit = this.config.maxRecentReports;
+        if (!isFiniteNumber(limit) || limit <= 0) return reports;
+        return reports.slice(0, limit);
+    }
+
+    loadReports(): void {
+        this.ensureReportsDir();
+        const raw = this.loadDataFile<unknown>(this.getReportsIndexFile(), []);
+        if (Array.isArray(raw)) {
+            this.reports = this.trimReports(raw as ReportListItem[]);
+        } else {
+            this.reports = [];
+        }
+    }
+
+    saveReports(): void {
+        this.ensureReportsDir();
+        this.saveDataFile(this.getReportsIndexFile(), this.reports);
+    }
+
+    setReports(reports: ReportListItem[]): void {
+        this.reports = this.trimReports(reports);
+        this.saveReports();
+    }
+
+    appendRecentError(message: string): void {
+        const text = message.trim();
+        if (!text) return;
+        this.recentErrors.unshift(text);
+        this.recentErrors = this.recentErrors.slice(0, 10);
+    }
+
+    setRuntimeServices(input: {
+        reportStorage?: ReportStorageService | null;
+        reportOrchestrator?: {
+            generateReport: (
+                sourceUrl: string,
+                groupId: string
+            ) => Promise<{ reportId: string; imageUrl: string; summary: string; generatedAt: string }>;
+        } | null;
+    }): void {
+        if (typeof input.reportStorage !== 'undefined') {
+            this.reportStorage = input.reportStorage;
+        }
+        if (typeof input.reportOrchestrator !== 'undefined') {
+            this.reportOrchestrator = input.reportOrchestrator;
+        }
+    }
+
+    cleanupExpiredReports(): void {
+        if (!this.reportStorage) return;
+        const filtered = this.reportStorage.filterExpiredReports(this.reports);
+        this.setReports(filtered);
+    }
+
+    startCleanupTimer(task: () => Promise<void> | void): void {
+        const existing = this.timers.get('report-cleanup');
+        if (existing) {
+            clearInterval(existing);
+        }
+
+        const timer = setInterval(() => {
+            void Promise.resolve(task()).catch((error) => {
+                this.logger.error('报告清理任务执行失败:', error);
+            });
+        }, 60 * 60 * 1000);
+
+        this.timers.set('report-cleanup', timer);
+    }
+
     // ==================== 配置管理 ====================
 
     /**
@@ -231,7 +359,7 @@ class PluginState {
      * 合并更新配置
      */
     updateConfig(partial: Partial<PluginConfig>): void {
-        this.config = { ...this.config, ...partial };
+        this.config = sanitizeConfig({ ...this.config, ...partial });
         this.saveConfig();
     }
 

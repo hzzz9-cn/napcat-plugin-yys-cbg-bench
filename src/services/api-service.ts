@@ -16,11 +16,7 @@
  * 一般插件自带的 WebUI 页面使用 NoAuth 路由，因为页面本身已在 NapCat WebUI 内嵌展示。
  */
 
-import type {
-    NapCatPluginContext,
-    PluginHttpRequest,
-    PluginHttpResponse
-} from 'napcat-types/napcat-onebot/network/plugin/types';
+import type { NapCatPluginContext } from '../napcat-shim';
 import { pluginState } from '../core/state';
 
 /**
@@ -41,8 +37,29 @@ export function registerApiRoutes(ctx: NapCatPluginContext): void {
                 uptimeFormatted: pluginState.getUptimeFormatted(),
                 config: pluginState.config,
                 stats: pluginState.stats,
+                reports: pluginState.reports,
+                recentErrors: pluginState.recentErrors,
             },
         });
+    });
+
+    /** 获取最近报告列表 */
+    router.getNoAuth('/reports', (_req, res) => {
+        res.json({
+            code: 0,
+            data: pluginState.reports,
+        });
+    });
+
+    /** 手动清理过期报告 */
+    router.postNoAuth('/reports/cleanup', async (_req, res) => {
+        try {
+            pluginState.cleanupExpiredReports();
+            res.json({ code: 0, message: 'ok' });
+        } catch (err) {
+            ctx.logger.error('清理报告失败:', err);
+            res.status(500).json({ code: -1, message: '清理报告失败' });
+        }
     });
 
     // ==================== 配置管理（无鉴权）====================

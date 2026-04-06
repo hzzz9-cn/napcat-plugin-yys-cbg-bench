@@ -136,6 +136,9 @@ export default function GroupsPage() {
                 共 {groups.length} 个群，{groups.filter(g => g.enabled).length} 个已启用
                 {search && `，搜索到 ${filtered.length} 个`}
             </p>
+            <p className="text-xs text-gray-400">
+                启用后，该群消息中出现藏宝阁链接时会自动触发分析并回图。
+            </p>
 
             {/* 群列表 */}
             <div className="card overflow-hidden animate-fade-in-up">
