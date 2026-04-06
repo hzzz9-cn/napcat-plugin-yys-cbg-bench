@@ -13,6 +13,7 @@ const _typecheckConfig: PluginConfig = {
     autoParseLinks: true,
     requestTimeoutMs: 15000,
     maxRenderMs: 30000,
+    renderServiceEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
     reportRetentionHours: 72,
     maxRecentReports: 20,
     groupConfigs: {},

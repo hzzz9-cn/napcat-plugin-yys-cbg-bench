@@ -95,6 +95,8 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
         });
         const reportRenderer = createReportRenderService({
             templateHtml: loadReportTemplateHtml(),
+            renderEndpoint: pluginState.config.renderServiceEndpoint,
+            requestTimeoutMs: pluginState.config.maxRenderMs,
         });
         const reportOrchestrator = createReportOrchestratorService({
             fetchService: createCbgFetchService({

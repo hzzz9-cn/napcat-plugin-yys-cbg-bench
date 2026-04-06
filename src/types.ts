@@ -28,6 +28,8 @@ export interface PluginConfig {
     requestTimeoutMs: number;
     /** 海报渲染超时时间（毫秒） */
     maxRenderMs: number;
+    /** napcat-plugin-puppeteer 渲染接口地址 */
+    renderServiceEndpoint: string;
     /** 报告保留时间（小时） */
     reportRetentionHours: number;
     /** 最近报告列表的最大条数 */

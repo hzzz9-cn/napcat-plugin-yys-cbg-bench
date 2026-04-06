@@ -89,7 +89,9 @@ describe('report-render-service', () => {
     it('injects the poster view model into html output', () => {
         const service = createReportRenderService({
             templateHtml: '<html><body><script id="report-data" type="application/json">__REPORT_JSON__</script></body></html>',
-            launchBrowser: vi.fn(),
+            renderEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            fetchImpl: vi.fn(),
+            writeFile: vi.fn(),
         })
 
         const html = service.renderHtml(createViewModel())
@@ -101,7 +103,9 @@ describe('report-render-service', () => {
     it('escapes script-breaking content inside injected json', () => {
         const service = createReportRenderService({
             templateHtml: '<html><body><script id="report-data" type="application/json">__REPORT_JSON__</script></body></html>',
-            launchBrowser: vi.fn(),
+            renderEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            fetchImpl: vi.fn(),
+            writeFile: vi.fn(),
         })
 
         const html = service.renderHtml(createViewModel({
@@ -118,29 +122,74 @@ describe('report-render-service', () => {
         expect(html).toContain('\\u003C/script\\u003E\\u003Cdiv\\u003Ebad\\u003C/div\\u003E')
     })
 
-    it('calls screenshot pipeline with the generated html', async () => {
-        const screenshot = vi.fn()
-        const close = vi.fn()
-        const setContent = vi.fn()
-        const newPage = vi.fn().mockResolvedValue({ setContent, screenshot })
+    it('calls remote render api and writes decoded png bytes', async () => {
+        const fetchImpl = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({
+                code: 0,
+                data: Buffer.from('fake-png').toString('base64'),
+            }),
+        } as Partial<Response> as Response)
+        const writeFile = vi.fn().mockResolvedValue(undefined)
         const service = createReportRenderService({
             templateHtml: '<html><body><script id="report-data" type="application/json">__REPORT_JSON__</script></body></html>',
-            launchBrowser: vi.fn().mockResolvedValue({ newPage, close }),
+            renderEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            requestTimeoutMs: 15000,
+            fetchImpl,
+            writeFile,
         })
 
         await service.renderToPng('<html></html>', 'D:/tmp/report.png')
 
-        expect(newPage).toHaveBeenCalled()
-        expect(setContent).toHaveBeenCalledWith('<html></html>', { waitUntil: 'networkidle' })
-        expect(screenshot).toHaveBeenCalledWith({ path: 'D:/tmp/report.png', fullPage: true })
-        expect(close).toHaveBeenCalled()
+        expect(fetchImpl).toHaveBeenCalledTimes(1)
+        expect(fetchImpl).toHaveBeenCalledWith(
+            'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            expect.objectContaining({
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    html: '<html></html>',
+                    encoding: 'base64',
+                    fullPage: true,
+                    type: 'png',
+                    pageGotoParams: {
+                        waitUntil: 'networkidle0',
+                        timeout: 15000,
+                    },
+                }),
+                signal: expect.any(AbortSignal),
+            }),
+        )
+        expect(writeFile).toHaveBeenCalledWith('D:/tmp/report.png', Buffer.from('fake-png'))
+    })
+
+    it('throws sanitized error when remote render api returns failure', async () => {
+        const fetchImpl = vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({
+                code: 500,
+                message: 'render failed',
+            }),
+        } as Partial<Response> as Response)
+        const service = createReportRenderService({
+            templateHtml: '<html><body><script id="report-data" type="application/json">__REPORT_JSON__</script></body></html>',
+            renderEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            fetchImpl,
+            writeFile: vi.fn(),
+        })
+
+        await expect(service.renderToPng('<html></html>', 'D:/tmp/report.png')).rejects.toThrow(
+            '截图服务返回错误: render failed',
+        )
     })
 
     it('renders real poster template with new schema consumption and no warning branding block', async () => {
         const templateHtml = readFileSync(path.resolve(process.cwd(), 'templates/report-poster.html'), 'utf-8')
         const service = createReportRenderService({
             templateHtml,
-            launchBrowser: vi.fn(),
+            renderEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
+            fetchImpl: vi.fn(),
+            writeFile: vi.fn(),
         })
 
         const html = service.renderHtml(createViewModel())
@@ -172,5 +221,11 @@ describe('report-render-service', () => {
         expect(html).not.toContain('data.warnings')
         expect(html).not.toContain('注意事项')
         expect(html).not.toContain('NapCat')
+    })
+
+    it('does not statically import playwright at module top level', () => {
+        const source = readFileSync(path.resolve(process.cwd(), 'src/services/report-render-service.ts'), 'utf-8')
+
+        expect(source).not.toContain('playwright')
     })
 })
