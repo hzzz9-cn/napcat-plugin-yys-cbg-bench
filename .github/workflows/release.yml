@@ -73,10 +73,11 @@ jobs:
           cp dist/index.mjs release/
           cp dist/package.json release/
           cp -r dist/webui release/
+          cp -r dist/templates release/
 
           # 进入临时目录并压缩
           cd release
-          zip -r ../${PLUGIN_NAME}.zip index.mjs package.json webui
+          zip -r ../${PLUGIN_NAME}.zip index.mjs package.json webui templates
 
       - name: Verify zip contents
         run: |

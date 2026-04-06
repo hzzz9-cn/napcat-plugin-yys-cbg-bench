@@ -19,9 +19,6 @@
  * @license MIT
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import type {
     PluginModule,
     PluginConfigSchema,
@@ -38,32 +35,12 @@ import { createReportOrchestratorService } from './services/report-orchestrator-
 import { createReportRenderService } from './services/report-render-service';
 import { createReportStorageService } from './services/report-storage-service';
 import type { PluginConfig } from './types';
+import reportPosterTemplateHtml from '../templates/report-poster.html?raw';
 
 // ==================== 配置 UI Schema ====================
 
 /** NapCat WebUI 读取此导出来展示配置面板 */
 export let plugin_config_ui: PluginConfigSchema = [];
-
-function loadReportTemplateHtml(): string {
-    const currentFile = fileURLToPath(import.meta.url);
-    const currentDir = path.dirname(currentFile);
-    const candidates = [
-        path.resolve(currentDir, '../templates/report-poster.html'),
-        path.resolve(currentDir, './templates/report-poster.html'),
-    ];
-
-    for (const candidate of candidates) {
-        try {
-            if (fs.existsSync(candidate)) {
-                return fs.readFileSync(candidate, 'utf-8');
-            }
-        } catch {
-            continue;
-        }
-    }
-
-    throw new Error('未找到报告模板 report-poster.html');
-}
 
 // ==================== 生命周期函数 ====================
 
@@ -94,7 +71,7 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
             maxRecentReports: pluginState.config.maxRecentReports,
         });
         const reportRenderer = createReportRenderService({
-            templateHtml: loadReportTemplateHtml(),
+            templateHtml: reportPosterTemplateHtml,
             renderEndpoint: pluginState.config.renderServiceEndpoint,
             requestTimeoutMs: pluginState.config.maxRenderMs,
         });
