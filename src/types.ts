@@ -34,6 +34,14 @@ export interface PluginConfig {
     reportRetentionHours: number;
     /** 最近报告列表的最大条数 */
     maxRecentReports: number;
+    /** 是否启用网易大神动态订阅 */
+    dynamicSubscriptionsEnabled: boolean;
+    /** 网易大神动态轮询间隔（分钟） */
+    dynamicPollingIntervalMinutes: number;
+    /** 超过该时长的动态不再推送（毫秒） */
+    dynamicMaxReportAgeMs: number;
+    /** 网易大神动态接口地址前缀 */
+    dynamicDsBaseUrl: string;
     /** 按群的单独配置 */
     groupConfigs: Record<string, GroupConfig>;
 }
@@ -134,4 +142,22 @@ export interface ApiResponse<T = unknown> {
     message?: string;
     /** 响应数据（仅成功时返回） */
     data?: T;
+}
+
+export type DynamicSubscriptionPlatform = 'ds';
+
+export interface DynamicSubscriptionRecord {
+    uid: string;
+    platform: DynamicSubscriptionPlatform;
+    groups: string[];
+    lastDynamicId: string | null;
+    nickName?: string;
+    lastCheckedAt?: string;
+    lastPushedAt?: string;
+}
+
+export interface DynamicSubscriptionPollSummary {
+    checkedCount: number;
+    pushedCount: number;
+    updatedCount: number;
 }

@@ -122,6 +122,8 @@ export default function StatusPage({ status, onRefresh }: StatusPageProps) {
                     <InfoRow label="请求超时" value={`${config.requestTimeoutMs} ms`} />
                     <InfoRow label="渲染超时" value={`${config.maxRenderMs} ms`} />
                     <InfoRow label="报告保留" value={`${config.reportRetentionHours} 小时`} />
+                    <InfoRow label="动态订阅" value={config.dynamicSubscriptionsEnabled ? '开启' : '关闭'} />
+                    <InfoRow label="动态轮询" value={`${config.dynamicPollingIntervalMinutes} 分钟`} />
                     <InfoRow label="调试模式" value={config.debug ? '开启' : '关闭'} />
                 </div>
             </div>

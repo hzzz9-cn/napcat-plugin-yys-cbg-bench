@@ -16,6 +16,7 @@ import type { NapCatPluginContext, PluginLogger } from '../napcat-shim';
 import { DEFAULT_CONFIG } from '../config';
 import type { PluginConfig, GroupConfig, ReportListItem } from '../types';
 import type { ReportStorageService } from '../services/report-storage-service';
+import type { DynamicSubscriptionService } from '../services/dynamic-subscription-service';
 
 // ==================== 配置清洗工具 ====================
 
@@ -57,6 +58,18 @@ function sanitizeConfig(raw: unknown): PluginConfig {
     }
     if (isFiniteNumber(raw.maxRecentReports) && raw.maxRecentReports >= 0) {
         out.maxRecentReports = raw.maxRecentReports;
+    }
+    if (typeof raw.dynamicSubscriptionsEnabled === 'boolean') {
+        out.dynamicSubscriptionsEnabled = raw.dynamicSubscriptionsEnabled;
+    }
+    if (isFiniteNumber(raw.dynamicPollingIntervalMinutes) && raw.dynamicPollingIntervalMinutes >= 1) {
+        out.dynamicPollingIntervalMinutes = raw.dynamicPollingIntervalMinutes;
+    }
+    if (isFiniteNumber(raw.dynamicMaxReportAgeMs) && raw.dynamicMaxReportAgeMs >= 0) {
+        out.dynamicMaxReportAgeMs = raw.dynamicMaxReportAgeMs;
+    }
+    if (typeof raw.dynamicDsBaseUrl === 'string' && raw.dynamicDsBaseUrl.trim()) {
+        out.dynamicDsBaseUrl = raw.dynamicDsBaseUrl.trim();
     }
 
     // 群配置清洗
@@ -115,6 +128,9 @@ class PluginState {
         ) => Promise<{ reportId: string; imagePath: string; imageUrl: string; summary: string; generatedAt: string }>;
     } | null = null;
 
+    /** 动态订阅服务（运行时注入） */
+    dynamicSubscriptionService: DynamicSubscriptionService | null = null;
+
     /** 获取上下文（确保已初始化） */
     get ctx(): NapCatPluginContext {
         if (!this._ctx) throw new Error('PluginState 尚未初始化，请先调用 init()');
@@ -170,6 +186,7 @@ class PluginState {
         this.saveConfig();
         this.reportStorage = null;
         this.reportOrchestrator = null;
+        this.dynamicSubscriptionService = null;
         this.reports = [];
         this.recentErrors = [];
         this.stats = {
@@ -283,12 +300,16 @@ class PluginState {
                 groupId: string
             ) => Promise<{ reportId: string; imagePath: string; imageUrl: string; summary: string; generatedAt: string }>;
         } | null;
+        dynamicSubscriptionService?: DynamicSubscriptionService | null;
     }): void {
         if (typeof input.reportStorage !== 'undefined') {
             this.reportStorage = input.reportStorage;
         }
         if (typeof input.reportOrchestrator !== 'undefined') {
             this.reportOrchestrator = input.reportOrchestrator;
+        }
+        if (typeof input.dynamicSubscriptionService !== 'undefined') {
+            this.dynamicSubscriptionService = input.dynamicSubscriptionService;
         }
     }
 
@@ -298,19 +319,30 @@ class PluginState {
         this.setReports(filtered);
     }
 
-    startCleanupTimer(task: () => Promise<void> | void): void {
-        const existing = this.timers.get('report-cleanup');
+    startTimer(jobId: string, intervalMs: number, task: () => Promise<void> | void): void {
+        const existing = this.timers.get(jobId);
         if (existing) {
             clearInterval(existing);
         }
 
         const timer = setInterval(() => {
             void Promise.resolve(task()).catch((error) => {
-                this.logger.error('报告清理任务执行失败:', error);
+                this.logger.error(`定时任务 ${jobId} 执行失败:`, error);
             });
-        }, 60 * 60 * 1000);
+        }, intervalMs);
 
-        this.timers.set('report-cleanup', timer);
+        this.timers.set(jobId, timer);
+    }
+
+    stopTimer(jobId: string): void {
+        const existing = this.timers.get(jobId);
+        if (!existing) return;
+        clearInterval(existing);
+        this.timers.delete(jobId);
+    }
+
+    startCleanupTimer(task: () => Promise<void> | void): void {
+        this.startTimer('report-cleanup', 60 * 60 * 1000, task);
     }
 
     // ==================== 配置管理 ====================

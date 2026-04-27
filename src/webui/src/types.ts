@@ -25,6 +25,10 @@ export interface PluginConfig {
     renderServiceEndpoint: string
     reportRetentionHours: number
     maxRecentReports: number
+    dynamicSubscriptionsEnabled: boolean
+    dynamicPollingIntervalMinutes: number
+    dynamicMaxReportAgeMs: number
+    dynamicDsBaseUrl: string
     groupConfigs: Record<string, GroupConfig>
 }
 
@@ -56,4 +60,20 @@ export interface ApiResponse<T = unknown> {
     code: number
     data?: T
     message?: string
+}
+
+export interface DynamicSubscriptionRecord {
+    uid: string
+    platform: 'ds'
+    groups: string[]
+    lastDynamicId: string | null
+    nickName?: string
+    lastCheckedAt?: string
+    lastPushedAt?: string
+}
+
+export interface DynamicSubscriptionPollSummary {
+    checkedCount: number
+    pushedCount: number
+    updatedCount: number
 }

@@ -14,6 +14,7 @@ import fs from 'node:fs/promises';
 import type { NapCatPluginContext, OB11Message, OB11PostSendMsg } from '../napcat-shim';
 import { pluginState } from '../core/state';
 import { extractFirstCbgUrl } from '../services/cbg-link-service';
+import { parseDynamicCommand } from '../services/dynamic-command-service';
 import { ReportError } from '../services/report-error';
 
 // ==================== CD 冷却管理 ====================
@@ -203,6 +204,12 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
 
         pluginState.ctx.logger.debug(`收到消息: ${rawMessage} | 类型: ${messageType}`);
 
+        const command = parseDynamicCommand(rawMessage, pluginState.config.commandPrefix);
+        if (command) {
+            await handleDynamicCommand(ctx, event, command);
+            return;
+        }
+
         const link = pluginState.config.autoParseLinks ? extractFirstCbgUrl(rawMessage) : null;
         if (!link) return;
 
@@ -249,5 +256,91 @@ export async function handleMessage(ctx: NapCatPluginContext, event: OB11Message
         }
     } catch (error) {
         pluginState.logger.error('处理消息时出错:', error);
+    }
+}
+
+async function handleDynamicCommand(
+    ctx: NapCatPluginContext,
+    event: OB11Message,
+    command: ReturnType<typeof parseDynamicCommand>
+): Promise<void> {
+    if (!command) return;
+
+    if (!pluginState.config.dynamicSubscriptionsEnabled) {
+        await sendReply(ctx, event, '动态订阅功能当前未启用');
+        return;
+    }
+
+    if (event.message_type !== 'group' || !event.group_id) {
+        await sendReply(ctx, event, '动态订阅命令仅支持在群聊中使用');
+        return;
+    }
+
+    if (!isAdmin(event)) {
+        await sendReply(ctx, event, '您没有权限进行此操作，请联系群管理员');
+        return;
+    }
+
+    const service = pluginState.dynamicSubscriptionService;
+    if (!service) {
+        await sendReply(ctx, event, '动态订阅服务尚未完成初始化');
+        return;
+    }
+
+    if (command.type === 'unsupported-platform') {
+        await sendReply(ctx, event, `暂不支持平台：${command.platformLabel}`);
+        return;
+    }
+
+    if (command.type === 'list') {
+        const subscriptions = service.list().filter((item) => item.groups.includes(String(event.group_id)));
+        if (subscriptions.length === 0) {
+            await sendReply(ctx, event, '当前群尚未订阅任何动态');
+            return;
+        }
+
+        const lines = subscriptions.map((item) => {
+            const name = item.nickName || item.uid;
+            return `${name} (网易大神)`;
+        });
+        await sendReply(ctx, event, `订阅信息如下：\n${lines.join('\n')}`);
+        return;
+    }
+
+    if (command.type === 'add') {
+        const result = service.addDsSubscription(command.uid, String(event.group_id));
+        if (!result.groupAdded) {
+            await sendReply(ctx, event, `已经存在网易大神的订阅 ${command.uid}`);
+            return;
+        }
+
+        await sendReply(ctx, event, `成功添加网易大神订阅：${command.uid}`);
+        return;
+    }
+
+    if (command.type === 'remove') {
+        const result = service.removeSubscription({
+            uidOrNick: command.target,
+            groupId: String(event.group_id),
+        });
+
+        if (!result.removed) {
+            await sendReply(ctx, event, `当前群还未订阅 ${command.target}`);
+            return;
+        }
+
+        await sendReply(ctx, event, `成功取消订阅：${command.target}`);
+        return;
+    }
+
+    if (command.type === 'poll') {
+        const summary = await service.pollAndDispatch(async (targetGroupId, message) => {
+            return sendGroupMessage(ctx, targetGroupId, message);
+        });
+        await sendReply(
+            ctx,
+            event,
+            `订阅检查完成：检查 ${summary.checkedCount} 项，推送 ${summary.pushedCount} 条，更新 ${summary.updatedCount} 项`
+        );
     }
 }

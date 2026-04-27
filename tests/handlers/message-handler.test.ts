@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import { pluginState } from '../../src/core/state'
 import { handleMessage } from '../../src/handlers/message-handler'
 import { ReportError } from '../../src/services/report-error'
+import { createDynamicSubscriptionService } from '../../src/services/dynamic-subscription-service'
 import { createTestPluginContext } from '../setup/test-plugin-context'
 
 describe('message-handler', () => {
@@ -138,5 +139,91 @@ describe('message-handler', () => {
             ([action]) => action === 'send_msg'
         )
         expect(sendCalls).toHaveLength(0)
+    })
+
+    it('adds and lists dynamic subscriptions through group admin commands', async () => {
+        const ctx = createTestPluginContext()
+        pluginState.init(ctx)
+        pluginState.updateConfig({
+            enabled: true,
+            dynamicSubscriptionsEnabled: true,
+            commandPrefix: '#cbg',
+        })
+        pluginState.setRuntimeServices({
+            dynamicSubscriptionService: createDynamicSubscriptionService({
+                dataPath: ctx.dataPath,
+                dsFeedService: {
+                    fetchLatest: vi.fn(),
+                },
+            }),
+        })
+
+        await handleMessage(ctx, {
+            post_type: 'message',
+            raw_message: '#cbg 添加订阅 12345',
+            message_type: 'group',
+            group_id: 123,
+            user_id: 456,
+            sender: { role: 'admin' },
+        })
+
+        await handleMessage(ctx, {
+            post_type: 'message',
+            raw_message: '#cbg 订阅清单',
+            message_type: 'group',
+            group_id: 123,
+            user_id: 456,
+            sender: { role: 'admin' },
+        })
+
+        const sendCalls = (ctx.actions.call as ReturnType<typeof vi.fn>).mock.calls.filter(
+            ([action]) => action === 'send_msg'
+        )
+        expect(sendCalls[0]?.[1]).toMatchObject({
+            message: '成功添加网易大神订阅：12345',
+            message_type: 'group',
+            group_id: '123',
+        })
+        expect(sendCalls[1]?.[1]).toMatchObject({
+            message: '订阅信息如下：\n12345 (网易大神)',
+            message_type: 'group',
+            group_id: '123',
+        })
+    })
+
+    it('rejects dynamic subscription commands from non-admin members', async () => {
+        const ctx = createTestPluginContext()
+        pluginState.init(ctx)
+        pluginState.updateConfig({
+            enabled: true,
+            dynamicSubscriptionsEnabled: true,
+            commandPrefix: '#cbg',
+        })
+        pluginState.setRuntimeServices({
+            dynamicSubscriptionService: createDynamicSubscriptionService({
+                dataPath: ctx.dataPath,
+                dsFeedService: {
+                    fetchLatest: vi.fn(),
+                },
+            }),
+        })
+
+        await handleMessage(ctx, {
+            post_type: 'message',
+            raw_message: '#cbg 添加订阅 12345',
+            message_type: 'group',
+            group_id: 123,
+            user_id: 456,
+            sender: { role: 'member' },
+        })
+
+        const sendCalls = (ctx.actions.call as ReturnType<typeof vi.fn>).mock.calls.filter(
+            ([action]) => action === 'send_msg'
+        )
+        expect(sendCalls[0]?.[1]).toMatchObject({
+            message: '您没有权限进行此操作，请联系群管理员',
+            message_type: 'group',
+            group_id: '123',
+        })
     })
 })
