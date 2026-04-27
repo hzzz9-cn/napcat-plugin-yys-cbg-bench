@@ -28,14 +28,9 @@ import type {
 import { buildConfigSchema } from './config';
 import { pluginState } from './core/state';
 import { handleMessage } from './handlers/message-handler';
+import { refreshPluginRuntime, syncPluginTimers } from './runtime';
 import { registerApiRoutes } from './services/api-service';
-import { analyzeCbgDetail } from './services/cbg-analyzer-service';
-import { createCbgFetchService } from './services/cbg-fetch-service';
-import { createReportOrchestratorService } from './services/report-orchestrator-service';
-import { createReportRenderService } from './services/report-render-service';
-import { createReportStorageService } from './services/report-storage-service';
 import type { PluginConfig } from './types';
-import reportPosterTemplateHtml from '../templates/report-poster.html?raw';
 
 // ==================== 配置 UI Schema ====================
 
@@ -64,33 +59,8 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
         // 4. 注册 API 路由
         registerApiRoutes(ctx);
 
-        const reportStorage = createReportStorageService({
-            dataPath: ctx.dataPath,
-            pluginStaticBase: `/plugin/${ctx.pluginName}/files/static/reports`,
-            retentionHours: pluginState.config.reportRetentionHours,
-            maxRecentReports: pluginState.config.maxRecentReports,
-        });
-        const reportRenderer = createReportRenderService({
-            templateHtml: reportPosterTemplateHtml,
-            renderEndpoint: pluginState.config.renderServiceEndpoint,
-            requestTimeoutMs: pluginState.config.maxRenderMs,
-        });
-        const reportOrchestrator = createReportOrchestratorService({
-            fetchService: createCbgFetchService({
-                timeoutMs: pluginState.config.requestTimeoutMs,
-            }),
-            analyzer: analyzeCbgDetail,
-            storage: reportStorage,
-            renderer: reportRenderer,
-        });
-
-        pluginState.setRuntimeServices({
-            reportStorage,
-            reportOrchestrator,
-        });
-        pluginState.startCleanupTimer(() => {
-            pluginState.cleanupExpiredReports();
-        });
+        refreshPluginRuntime(ctx);
+        syncPluginTimers(ctx);
 
         ctx.logger.info('插件初始化完成');
     } catch (error) {
@@ -146,6 +116,8 @@ export const plugin_get_config: PluginModule['plugin_get_config'] = async (ctx) 
 /** 设置配置（完整替换，由 NapCat WebUI 调用） */
 export const plugin_set_config: PluginModule['plugin_set_config'] = async (ctx, config) => {
     pluginState.replaceConfig(config as PluginConfig);
+    refreshPluginRuntime(ctx);
+    syncPluginTimers(ctx);
     ctx.logger.info('配置已通过 WebUI 更新');
 };
 
@@ -158,6 +130,8 @@ export const plugin_on_config_change: PluginModule['plugin_on_config_change'] = 
 ) => {
     try {
         pluginState.updateConfig({ [key]: value });
+        refreshPluginRuntime(ctx);
+        syncPluginTimers(ctx);
         ctx.logger.debug(`配置项 ${key} 已更新`);
     } catch (err) {
         ctx.logger.error(`更新配置项 ${key} 失败:`, err);

@@ -19,11 +19,13 @@ describe('plugin_init', () => {
         expect(ctx.router.static).toHaveBeenCalledWith('/static/reports', `${ctx.dataPath}/reports`)
         expect(pluginState.reportStorage).not.toBeNull()
         expect(pluginState.reportOrchestrator).not.toBeNull()
+        expect(pluginState.dynamicSubscriptionService).not.toBeNull()
         expect(pluginState.timers.has('report-cleanup')).toBe(true)
+        expect(pluginState.timers.has('dynamic-subscription-poll')).toBe(true)
     })
 
     it('bundles the report template into the plugin source instead of requiring runtime template lookup', () => {
-        const source = readFileSync(path.resolve(process.cwd(), 'src/index.ts'), 'utf-8')
+        const source = readFileSync(path.resolve(process.cwd(), 'src/runtime.ts'), 'utf-8')
 
         expect(source).toContain("report-poster.html?raw")
         expect(source).not.toContain("未找到报告模板 report-poster.html")

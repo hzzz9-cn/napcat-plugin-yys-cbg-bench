@@ -18,6 +18,30 @@
 
 import type { NapCatPluginContext } from '../napcat-shim';
 import { pluginState } from '../core/state';
+import { refreshPluginRuntime, syncPluginTimers } from '../runtime';
+
+async function sendGroupMessage(
+    ctx: NapCatPluginContext,
+    groupId: string,
+    message: string | Array<{ type: string; data: Record<string, unknown> }>
+): Promise<boolean> {
+    try {
+        await ctx.actions.call(
+            'send_msg',
+            {
+                message,
+                message_type: 'group',
+                group_id: String(groupId),
+            },
+            ctx.adapterName,
+            ctx.pluginManager.config,
+        );
+        return true;
+    } catch (error) {
+        ctx.logger.error(`发送动态订阅消息到群 ${groupId} 失败:`, error);
+        return false;
+    }
+}
 
 /**
  * 注册 API 路由
@@ -77,6 +101,8 @@ export function registerApiRoutes(ctx: NapCatPluginContext): void {
                 return res.status(400).json({ code: -1, message: '请求体为空' });
             }
             pluginState.updateConfig(body as Partial<import('../types').PluginConfig>);
+            refreshPluginRuntime(ctx);
+            syncPluginTimers(ctx);
             ctx.logger.info('配置已保存');
             res.json({ code: 0, message: 'ok' });
         } catch (err) {
@@ -156,7 +182,92 @@ export function registerApiRoutes(ctx: NapCatPluginContext): void {
         }
     });
 
-    // TODO: 在这里添加你的自定义 API 路由
+    // ==================== 动态订阅管理（无鉴权）====================
+
+    router.getNoAuth('/dynamic/subscriptions', (_req, res) => {
+        const service = pluginState.dynamicSubscriptionService;
+        if (!service) {
+            return res.status(503).json({ code: -1, message: '动态订阅服务未初始化' });
+        }
+
+        res.json({
+            code: 0,
+            data: service.list(),
+        });
+    });
+
+    router.postNoAuth('/dynamic/subscriptions', async (req, res) => {
+        try {
+            const service = pluginState.dynamicSubscriptionService;
+            if (!service) {
+                return res.status(503).json({ code: -1, message: '动态订阅服务未初始化' });
+            }
+
+            const body = req.body as Record<string, unknown> | undefined;
+            const uid = typeof body?.uid === 'string' ? body.uid.trim() : '';
+            const groupId = typeof body?.groupId === 'string' || typeof body?.groupId === 'number'
+                ? String(body.groupId).trim()
+                : '';
+
+            if (!uid || !groupId) {
+                return res.status(400).json({ code: -1, message: '缺少 UID 或群 ID' });
+            }
+
+            const result = service.addDsSubscription(uid, groupId);
+            res.json({
+                code: 0,
+                message: result.groupAdded ? 'ok' : 'duplicate',
+                data: result.record,
+            });
+        } catch (error) {
+            ctx.logger.error('新增动态订阅失败:', error);
+            res.status(500).json({ code: -1, message: '新增动态订阅失败' });
+        }
+    });
+
+    router.postNoAuth('/dynamic/subscriptions/remove', async (req, res) => {
+        try {
+            const service = pluginState.dynamicSubscriptionService;
+            if (!service) {
+                return res.status(503).json({ code: -1, message: '动态订阅服务未初始化' });
+            }
+
+            const body = req.body as Record<string, unknown> | undefined;
+            const uidOrNick = typeof body?.uidOrNick === 'string' ? body.uidOrNick.trim() : '';
+            const groupId = typeof body?.groupId === 'string' || typeof body?.groupId === 'number'
+                ? String(body.groupId).trim()
+                : undefined;
+
+            if (!uidOrNick) {
+                return res.status(400).json({ code: -1, message: '缺少 UID 或昵称' });
+            }
+
+            const result = service.removeSubscription({ uidOrNick, groupId });
+            if (!result.removed) {
+                return res.status(404).json({ code: -1, message: '订阅不存在' });
+            }
+
+            res.json({ code: 0, message: 'ok' });
+        } catch (error) {
+            ctx.logger.error('删除动态订阅失败:', error);
+            res.status(500).json({ code: -1, message: '删除动态订阅失败' });
+        }
+    });
+
+    router.postNoAuth('/dynamic/subscriptions/poll', async (_req, res) => {
+        try {
+            const service = pluginState.dynamicSubscriptionService;
+            if (!service) {
+                return res.status(503).json({ code: -1, message: '动态订阅服务未初始化' });
+            }
+
+            const summary = await service.pollAndDispatch((groupId, message) => sendGroupMessage(ctx, groupId, message));
+            res.json({ code: 0, data: summary, message: 'ok' });
+        } catch (error) {
+            ctx.logger.error('手动检查动态订阅失败:', error);
+            res.status(500).json({ code: -1, message: '手动检查动态订阅失败' });
+        }
+    });
 
     ctx.logger.debug('API 路由注册完成');
 }

@@ -18,6 +18,10 @@ export const DEFAULT_CONFIG: PluginConfig = {
     renderServiceEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
     reportRetentionHours: 24,
     maxRecentReports: 20,
+    dynamicSubscriptionsEnabled: true,
+    dynamicPollingIntervalMinutes: 2,
+    dynamicMaxReportAgeMs: 60 * 60 * 1000,
+    dynamicDsBaseUrl: 'https://inf.ds.163.com/v1/web/feed/basic/getSomeOneFeeds?feedTypes=1,2,3,6&someOneUid=',
     groupConfigs: {},
 };
 
@@ -67,6 +71,34 @@ export function buildConfigSchema(ctx: NapCatPluginContext): PluginConfigSchema 
         // 报告保留时间
         ctx.NapCatConfig.number('reportRetentionHours', '报告保留时间（小时）', 24, '超过该时间的报告会被清理'),
         // 最近报告上限
-        ctx.NapCatConfig.number('maxRecentReports', '最近报告上限', 20, 'WebUI 中最多保留的报告条数')
+        ctx.NapCatConfig.number('maxRecentReports', '最近报告上限', 20, 'WebUI 中最多保留的报告条数'),
+        // 动态订阅开关
+        ctx.NapCatConfig.boolean(
+            'dynamicSubscriptionsEnabled',
+            '启用动态订阅',
+            true,
+            '启用后可使用添加订阅 / 删除订阅 / 订阅清单命令，并按周期检查网易大神动态',
+        ),
+        // 动态轮询间隔
+        ctx.NapCatConfig.number(
+            'dynamicPollingIntervalMinutes',
+            '动态轮询间隔（分钟）',
+            2,
+            '检查订阅动态的轮询周期，最小 1 分钟',
+        ),
+        // 动态推送时效
+        ctx.NapCatConfig.number(
+            'dynamicMaxReportAgeMs',
+            '动态推送时效（毫秒）',
+            60 * 60 * 1000,
+            '超过该时长的旧动态不再回推到群聊',
+        ),
+        // 网易大神动态接口
+        ctx.NapCatConfig.text(
+            'dynamicDsBaseUrl',
+            '网易大神动态接口',
+            'https://inf.ds.163.com/v1/web/feed/basic/getSomeOneFeeds?feedTypes=1,2,3,6&someOneUid=',
+            '仅在网易大神接口发生变化时需要覆盖',
+        ),
     );
 }

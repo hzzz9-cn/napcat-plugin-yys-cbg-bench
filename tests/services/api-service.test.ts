@@ -101,4 +101,85 @@ describe('api-service', () => {
         expect(cleanupRes.body).toMatchObject({ code: 0, message: 'ok' })
         expect(pluginState.reports).toEqual([])
     })
+
+    it('registers dynamic subscription endpoints', async () => {
+        const ctx = createTestPluginContext()
+        pluginState.init(ctx)
+        pluginState.setRuntimeServices({
+            dynamicSubscriptionService: {
+                list: vi.fn().mockReturnValue([
+                    {
+                        uid: '12345',
+                        platform: 'ds',
+                        groups: ['1001'],
+                        lastDynamicId: 'feed-1',
+                    },
+                ]),
+                addDsSubscription: vi.fn().mockReturnValue({
+                    created: true,
+                    groupAdded: true,
+                    record: {
+                        uid: '12345',
+                        platform: 'ds',
+                        groups: ['1001'],
+                        lastDynamicId: null,
+                    },
+                }),
+                removeSubscription: vi.fn().mockReturnValue({
+                    removed: true,
+                    removedRecord: false,
+                    record: {
+                        uid: '12345',
+                        platform: 'ds',
+                        groups: [],
+                        lastDynamicId: null,
+                    },
+                }),
+                pollAndDispatch: vi.fn().mockResolvedValue({
+                    checkedCount: 1,
+                    pushedCount: 1,
+                    updatedCount: 1,
+                }),
+            },
+        })
+
+        registerApiRoutes(ctx)
+
+        const getRoutes = (ctx.router.getNoAuth as ReturnType<typeof vi.fn>).mock.calls
+        const postRoutes = (ctx.router.postNoAuth as ReturnType<typeof vi.fn>).mock.calls
+
+        const listHandler = getRoutes.find(([path]) => path === '/dynamic/subscriptions')?.[1]
+        const addHandler = postRoutes.find(([path]) => path === '/dynamic/subscriptions')?.[1]
+        const removeHandler = postRoutes.find(([path]) => path === '/dynamic/subscriptions/remove')?.[1]
+        const pollHandler = postRoutes.find(([path]) => path === '/dynamic/subscriptions/poll')?.[1]
+
+        const listRes = createResponseRecorder()
+        await listHandler?.({}, listRes as any)
+        expect(listRes.body).toMatchObject({
+            code: 0,
+            data: [expect.objectContaining({ uid: '12345' })],
+        })
+
+        const addRes = createResponseRecorder()
+        await addHandler?.({ body: { uid: '12345', groupId: '1001' } }, addRes as any)
+        expect(addRes.body).toMatchObject({
+            code: 0,
+            data: expect.objectContaining({ uid: '12345' }),
+        })
+
+        const removeRes = createResponseRecorder()
+        await removeHandler?.({ body: { uidOrNick: '12345', groupId: '1001' } }, removeRes as any)
+        expect(removeRes.body).toMatchObject({ code: 0, message: 'ok' })
+
+        const pollRes = createResponseRecorder()
+        await pollHandler?.({}, pollRes as any)
+        expect(pollRes.body).toMatchObject({
+            code: 0,
+            data: {
+                checkedCount: 1,
+                pushedCount: 1,
+                updatedCount: 1,
+            },
+        })
+    })
 })

@@ -127,6 +127,32 @@ export default function ConfigPage() {
                         type="number"
                         onChange={(v) => updateField('maxRecentReports', Number(v) || 0)}
                     />
+                    <ToggleRow
+                        label="启用动态订阅"
+                        desc="允许群管理员使用添加订阅 / 删除订阅 / 订阅清单命令，并开启后台动态轮询"
+                        checked={config.dynamicSubscriptionsEnabled}
+                        onChange={(v) => updateField('dynamicSubscriptionsEnabled', v)}
+                    />
+                    <InputRow
+                        label="动态轮询间隔 (分钟)"
+                        desc="网易大神动态的检查周期，最小 1 分钟"
+                        value={String(config.dynamicPollingIntervalMinutes)}
+                        type="number"
+                        onChange={(v) => updateField('dynamicPollingIntervalMinutes', Math.max(1, Number(v) || 1))}
+                    />
+                    <InputRow
+                        label="动态推送时效 (ms)"
+                        desc="超过该时长的旧动态不会再回推到群聊"
+                        value={String(config.dynamicMaxReportAgeMs)}
+                        type="number"
+                        onChange={(v) => updateField('dynamicMaxReportAgeMs', Math.max(0, Number(v) || 0))}
+                    />
+                    <InputRow
+                        label="网易大神动态接口"
+                        desc="仅在网易大神动态接口发生变化时需要覆盖"
+                        value={config.dynamicDsBaseUrl}
+                        onChange={(v) => updateField('dynamicDsBaseUrl', v.trim())}
+                    />
                 </div>
             </div>
 

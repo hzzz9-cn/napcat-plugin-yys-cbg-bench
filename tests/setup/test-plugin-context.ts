@@ -16,6 +16,10 @@ const _typecheckConfig: PluginConfig = {
     renderServiceEndpoint: 'http://127.0.0.1:6099/plugin/napcat-plugin-puppeteer/api/render',
     reportRetentionHours: 72,
     maxRecentReports: 20,
+    dynamicSubscriptionsEnabled: true,
+    dynamicPollingIntervalMinutes: 2,
+    dynamicMaxReportAgeMs: 60 * 60 * 1000,
+    dynamicDsBaseUrl: 'https://inf.ds.163.com/v1/web/feed/basic/getSomeOneFeeds?feedTypes=1,2,3,6&someOneUid=',
     groupConfigs: {},
 }
 
